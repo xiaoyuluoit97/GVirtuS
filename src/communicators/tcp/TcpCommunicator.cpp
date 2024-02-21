@@ -50,7 +50,9 @@ static bool initialized = false;
 #endif
 
 #include <gvirtus/communicators/Endpoint.h>
+#include <gvirtus/communicators/Endpoint_Rdma.h>
 #include <gvirtus/communicators/Endpoint_Tcp.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -230,7 +232,7 @@ size_t TcpCommunicator::Write(const char *buffer, size_t size) {
 #endif
 
 #ifdef DEBUG
-    printf("TcpCommunicator::Read() returned %zu\n", size);
+    printf("TcpCommunicator::Write() returned %zu\n", size);
 #endif
 
     return size;

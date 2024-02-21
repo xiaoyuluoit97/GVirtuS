@@ -233,7 +233,7 @@ extern "C" __host__ cudaError_t cudaLaunchKernel ( const void* func,
      */
 
     //printf("Execute...\n");
-    //CudaRtFrontend::Execute("cudaLaunchKernel");
+    CudaRtFrontend::Execute("cudaLaunchKernel");
     cudaError = CudaRtFrontend::GetExitCode();
     //printf("...done!\n");
     if (cudaError == cudaSuccess) {
@@ -271,5 +271,6 @@ extern "C" __host__ cudaError_t cudaLaunchKernel ( const void* func,
     }
     free(pArgsPayload);
     return cudaError;
-}
 #endif
+}
+//#endif

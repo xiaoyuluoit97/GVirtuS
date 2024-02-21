@@ -30,7 +30,7 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 
     std::string logLevelString = (val == NULL ? std::string("") : std::string(val));
 
-    if (logLevelString != "") {
+    if (!logLevelString.empty()) {
         logLevel = std::stoi(logLevelString);
     }
     logger.setLogLevel(logLevel);

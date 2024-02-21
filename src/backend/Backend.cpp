@@ -28,18 +28,62 @@ Backend::Backend(const fs::path &path) {
     LOG4CPLUS_DEBUG(logger, "✓ - " << fs::path(__FILE__).filename() << ":" << __LINE__ << ":" << " Json file has been loaded.");
 
     // endpoints setup
+    LOG4CPLUS_TRACE(logger, "🛈  - Initializing endpoints setup");
+
     _properties = common::JSON<Property>(path).parser();
     _children.reserve(_properties.endpoints());
 
+    LOG4CPLUS_TRACE(logger, "🛈  - Got properties and reserved children array");
+
     if (_properties.endpoints() > 1) LOG4CPLUS_INFO(logger, "🛈  - Application serves on " << _properties.endpoints() << " several endpoint");
 
-    for (int i = 0; i < _properties.endpoints(); i++) {
-        _children.push_back(std::make_unique<Process>(
-                communicators::CommunicatorFactory::get_communicator(
-                        communicators::EndpointFactory::get_endpoint(path),
-                        _properties.secure()),
-                _properties.plugins().at(i)));
+    try {
+        for (int i = 0; i < _properties.endpoints(); i++) {
+            _children.push_back(
+                    std::make_unique<Process>(
+                            communicators::CommunicatorFactory::get_communicator(
+                                    communicators::EndpointFactory::get_endpoint(path),
+                                    _properties.secure()
+                            ),
+                            _properties.plugins().at(i)
+                    )
+            );
+        }
+        /*
+        for (int i = 0; i < _properties.endpoints(); i++) {
+            LOG4CPLUS_TRACE(logger, "🛈  - Setting up process " << i << ":");
+
+            auto secure = _properties.secure();
+            LOG4CPLUS_TRACE(logger, "🛈  - Secure:  " << secure);
+
+            auto endpoint = communicators::EndpointFactory::get_endpoint(path);
+            LOG4CPLUS_TRACE(logger, "🛈  - Endpoint: ok!");
+
+            auto communicator = communicators::CommunicatorFactory::get_communicator(endpoint, secure);
+            LOG4CPLUS_TRACE(logger, "🛈  - Communicator: ok!");
+
+            auto plugins = _properties.plugins().at(i);
+            LOG4CPLUS_TRACE(logger, "🛈  - Properties: ok!");
+
+            auto child = std::make_unique<Process>(communicator, plugins);
+            LOG4CPLUS_TRACE(logger, "🛈  - Process: ok!");
+
+            _children.push_back(child);
+        }
+         */
     }
+    catch (const char * exc) {
+        LOG4CPLUS_ERROR(logger, "🛈  - Exception during process setup: " << exc);
+    }
+    catch (std::string & exc) {
+        LOG4CPLUS_ERROR(logger, "🛈  - Exception during process setup: " << exc);
+    }
+    catch (std::logic_error & exc) {
+        LOG4CPLUS_ERROR(logger, "🛈  - Exception during process setup: " << exc.what());
+    }
+
+
+    LOG4CPLUS_INFO(logger, "🛈  - Backend Initialization is complete!");
 }
 
 void Backend::Start() {

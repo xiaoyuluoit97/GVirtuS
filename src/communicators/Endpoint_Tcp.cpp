@@ -1,4 +1,5 @@
 #include "gvirtus/communicators/Endpoint_Tcp.h"
+#include "gvirtus/communicators/Endpoint_Rdma.h"
 #include <regex>
 #include "gvirtus/communicators/EndpointFactory.h"
 

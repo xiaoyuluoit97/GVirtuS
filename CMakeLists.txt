@@ -32,11 +32,16 @@ add_library(gvirtus-common SHARED
         src/common/Observer.cpp
         src/common/SignalException.cpp
         src/common/SignalState.cpp
+        src/communicators/rdma/ktmrdma.cpp
         src/common/Util.cpp)
 
 add_dependencies(gvirtus-common log4cplus)
 
-target_link_libraries(gvirtus-common stdc++fs ${CMAKE_DL_LIBS} ${LIBLOG4CPLUS})
+target_link_libraries(gvirtus-common stdc++fs ${CMAKE_DL_LIBS} ${LIBLOG4CPLUS} rdmacm ibverbs)
+
+target_include_directories(gvirtus-common PRIVATE /usr/include/infiniband)
+target_include_directories(gvirtus-common PRIVATE /usr/include/rdma)
+
 gvirtus_install_target(gvirtus-common)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/nlohmann DESTINATION ${GVIRTUS_HOME}/include)
 install(DIRECTORY ${EXTERNAL_INSTALL_LOCATION}/include/log4cplus DESTINATION ${GVIRTUS_HOME}/include)
@@ -47,15 +52,28 @@ add_library(gvirtus-communicators SHARED
         src/communicators/Buffer.cpp
         src/communicators/CommunicatorFactory.cpp
         src/communicators/Endpoint_Tcp.cpp
+        src/communicators/Endpoint_Rdma.cpp
         src/communicators/EndpointFactory.cpp
-        src/communicators/Result.cpp)
-target_link_libraries(gvirtus-communicators gvirtus-common)
+        src/communicators/rdma/ktmrdma.cpp
+        src/communicators/Result.cpp
+        )
+target_link_libraries(gvirtus-communicators gvirtus-common rdmacm ibverbs)
 gvirtus_install_target(gvirtus-communicators)
 
 add_library(gvirtus-communicators-tcp SHARED
         src/communicators/tcp/TcpCommunicator.cpp)
 target_link_libraries(gvirtus-communicators-tcp gvirtus-communicators)
 gvirtus_install_target(gvirtus-communicators-tcp)
+
+## TODO: PROPERLY SETUP CMAKE AND PROJECT TO USE RDMA
+add_library(gvirtus-communicators-ib SHARED
+        src/communicators/rdma/ktmrdma.h
+        src/communicators/rdma/RdmaCommunicator.cpp
+        src/communicators/rdma/ktmrdma.cpp
+        )
+target_include_directories(gvirtus-communicators-ib PRIVATE /usr/include/infiniband /usr/include/rdma)
+target_link_libraries(gvirtus-communicators-ib gvirtus-communicators rdmacm ibverbs)
+gvirtus_install_target(gvirtus-communicators-ib)
 
 add_library(gvirtus-frontend SHARED
         src/frontend/Frontend.cpp)
@@ -67,7 +85,7 @@ add_executable(gvirtus-backend
         src/backend/main.cpp
         src/backend/Process.cpp
         src/backend/Property.cpp)
-target_link_libraries(gvirtus-backend gvirtus-communicators Threads::Threads)
+target_link_libraries(gvirtus-backend gvirtus-communicators Threads::Threads rdmacm ibverbs)
 gvirtus_install_target(gvirtus-backend)
 
 add_subdirectory(plugins/cublas)
