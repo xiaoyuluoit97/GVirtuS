@@ -39,6 +39,7 @@ private:
 
 public:
     RdmaCommunicator() = default;
+    ~RdmaCommunicator();
 
     /**
     * @brief Constructs an RdmaCommunicator object with the specified hostname and port.

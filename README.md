@@ -144,6 +144,20 @@ GVirtuS backend configuration file `$GVIRTUS_HOME/etc/properties.json` should be
 }
 ```
 
+Currently supported transmission means are:
+* **TCP/IP**: 
+``` 
+"suite": "tcp/ip",
+"protocol": "tcp", 
+```
+* **RDMA over Infiniband**
+``` 
+"suite": "infiniband-rdma",
+"protocol": "ib", 
+```
+Note that RDMA over Infiniband is currently under development and it's performances are really poor.
+
+
 To run `gvirtus-backend` server application, perform the following command:
 
 ```

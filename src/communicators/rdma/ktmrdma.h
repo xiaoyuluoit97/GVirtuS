@@ -8,12 +8,14 @@
 #include <errno.h>
 #include <string>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <rdma/rdma_cma.h>
 #include <rdma/rdma_verbs.h>
 
 #define DEBUG
 
-namespace gvirtus::communicators {
     void Testlib();
 /**
  * @brief Wrapper function for rdma_getaddrinfo with error handling.
@@ -225,6 +227,5 @@ void ktm_server_exchange_rdma_info(struct rdma_cm_id *id, void *addr, size_t len
 
 void ktm_server_exchange_rdma_info(struct rdma_cm_id *id, void *addr, size_t length, struct ibv_mr *mr, uintptr_t * remote_addr, uint32_t * remote_rkey, struct ibv_mr *rdma_mr);
 
-} // end namespace
 
 #endif //RDMACM_KTMRDMA_H

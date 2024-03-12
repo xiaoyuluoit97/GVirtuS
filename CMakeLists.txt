@@ -32,15 +32,15 @@ add_library(gvirtus-common SHARED
         src/common/Observer.cpp
         src/common/SignalException.cpp
         src/common/SignalState.cpp
-        src/communicators/rdma/ktmrdma.cpp
+        ##src/communicators/rdma/ktmrdma.cpp
         src/common/Util.cpp)
 
 add_dependencies(gvirtus-common log4cplus)
 
 target_link_libraries(gvirtus-common stdc++fs ${CMAKE_DL_LIBS} ${LIBLOG4CPLUS} rdmacm ibverbs)
 
-target_include_directories(gvirtus-common PRIVATE /usr/include/infiniband)
-target_include_directories(gvirtus-common PRIVATE /usr/include/rdma)
+##target_include_directories(gvirtus-common PRIVATE /usr/include/infiniband)
+##target_include_directories(gvirtus-common PRIVATE /usr/include/rdma)
 
 gvirtus_install_target(gvirtus-common)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/nlohmann DESTINATION ${GVIRTUS_HOME}/include)
@@ -60,18 +60,19 @@ add_library(gvirtus-communicators SHARED
 target_link_libraries(gvirtus-communicators gvirtus-common rdmacm ibverbs)
 gvirtus_install_target(gvirtus-communicators)
 
+## TCP COMMUNICATOR
 add_library(gvirtus-communicators-tcp SHARED
         src/communicators/tcp/TcpCommunicator.cpp)
 target_link_libraries(gvirtus-communicators-tcp gvirtus-communicators)
 gvirtus_install_target(gvirtus-communicators-tcp)
 
+## IB COMMUNICATOR
 ## TODO: PROPERLY SETUP CMAKE AND PROJECT TO USE RDMA
 add_library(gvirtus-communicators-ib SHARED
-        src/communicators/rdma/ktmrdma.h
-        src/communicators/rdma/RdmaCommunicator.cpp
         src/communicators/rdma/ktmrdma.cpp
+        src/communicators/rdma/RdmaCommunicator.cpp
         )
-target_include_directories(gvirtus-communicators-ib PRIVATE /usr/include/infiniband /usr/include/rdma)
+##target_include_directories(gvirtus-communicators-ib PUBLIC /usr/include/infiniband /usr/include/rdma /src/communicators/rdma)
 target_link_libraries(gvirtus-communicators-ib gvirtus-communicators rdmacm ibverbs)
 gvirtus_install_target(gvirtus-communicators-ib)
 

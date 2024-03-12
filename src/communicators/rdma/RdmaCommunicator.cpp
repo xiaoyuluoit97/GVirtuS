@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "ktmrdma.h"
+#include <arpa/inet.h>
 #include "RdmaCommunicator.h"
 
 #include <gvirtus/communicators/Endpoint.h>
@@ -28,8 +28,15 @@ RdmaCommunicator::RdmaCommunicator(char * hostname, char * port) {
         throw "RdmaCommunicator: Can't resolve hostname \"" + std::string(hostname) + "\"...";
     }
 
-    this->hostname = hostname;
+    auto addrLen = ent->h_length;
+    this->hostname = new char[addrLen];
+    memcpy(this->hostname, *ent->h_addr_list, addrLen);
     this->port = port;
+
+    std::cout << "Hostname: " << this->hostname << ", port: " << this->port << std::endl;
+
+    memset(&rdmaCmId, 0, sizeof(rdmaCmId));
+    memset(&rdmaCmListenId, 0, sizeof(rdmaCmListenId));
 }
 
 RdmaCommunicator::RdmaCommunicator(rdma_cm_id *rdmaCmId, bool isServing) {
@@ -40,11 +47,18 @@ RdmaCommunicator::RdmaCommunicator(rdma_cm_id *rdmaCmId, bool isServing) {
     this->isServing = isServing;
 }
 
+RdmaCommunicator::~RdmaCommunicator() {
+#ifdef DEBUG
+    std::cout << "RdmaCommunicator::~RdmaCommunicator(): called." << std::endl;
+#endif
+    rdma_disconnect(rdmaCmId);
+    rdma_destroy_id(rdmaCmId);
+}
+
 void RdmaCommunicator::Serve() {
 #ifdef DEBUG
     std::cout << "RdmaCommunicator::Serve(): called." << std::endl;
 #endif
-    Testlib();
     // Setup address info
     rdma_addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -52,7 +66,10 @@ void RdmaCommunicator::Serve() {
     hints.ai_flags = RAI_PASSIVE;
 
     rdma_addrinfo * rdmaAddrinfo;
-    gvirtus::communicators::ktm_rdma_getaddrinfo(nullptr, port, &hints, &rdmaAddrinfo);
+
+    char testhost[50] = "192.168.4.99";
+    char testport[50] = "9999";
+    ktm_rdma_getaddrinfo(testhost, testport, &hints, &rdmaAddrinfo);
 
     // Create communication manager id with queue pair attributes
     ibv_qp_init_attr qpInitAttr;
@@ -62,9 +79,10 @@ void RdmaCommunicator::Serve() {
     qpInitAttr.cap.max_recv_wr = 20;
     qpInitAttr.cap.max_send_sge = 20;
     qpInitAttr.cap.max_recv_sge = 20;
+    //qpInitAttr.qp_context = rdmaCmId;
     qpInitAttr.sq_sig_all = 1;
 
-    ktm_rdma_create_ep(&rdmaCmListenId, rdmaAddrinfo, nullptr, &qpInitAttr);
+    ktm_rdma_create_ep(&rdmaCmListenId, rdmaAddrinfo, NULL, &qpInitAttr);
     rdma_freeaddrinfo(rdmaAddrinfo);
 
     // Listen for connections
@@ -78,22 +96,31 @@ const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() con
     std::cout << "RdmaCommunicator::Accept(): called." << std::endl;
 #endif
     rdma_cm_id * clientRdmaCmId;
+
+#ifdef DEBUG
+    std::cout << "RdmaCommunicator::Accept(): waiting for connection..." << std::endl;
+#endif
     ktm_rdma_get_request(rdmaCmListenId, &clientRdmaCmId);
     ktm_rdma_accept(clientRdmaCmId, nullptr);
+
+#ifdef DEBUG
+    std::cout << "RdmaCommunicator::Accept(): connected..." << std::endl;
+#endif
     return new RdmaCommunicator(clientRdmaCmId);
 }
 
 void RdmaCommunicator::Connect() {
-#ifdef DEBUG
-    std::cout << "RdmaCommunicator::Connect(): called." << std::endl;
-#endif
     // Setup address info
     rdma_addrinfo hints;
     memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
     hints.ai_port_space = RDMA_PS_TCP;
 
     rdma_addrinfo * rdmaAddrinfo;
-    ktm_rdma_getaddrinfo(hostname, port, &hints, &rdmaAddrinfo);
+
+    char testhost[50] = "192.168.4.99";
+    char testport[50] = "9999";
+    ktm_rdma_getaddrinfo(testhost, testport, &hints, &rdmaAddrinfo);
 
     // Create communication manager id with queue pair attributes
     ibv_qp_init_attr qpInitAttr;
@@ -113,20 +140,40 @@ void RdmaCommunicator::Connect() {
 
 size_t RdmaCommunicator::Read(char *buffer, size_t size) {
 #ifdef DEBUG
-    std::cout << "RdmaCommunicator::Read(): called." << std::endl;
+    std::cout << "RdmaCommunicator::Read(): called."
+    << "Size: " << size << std::endl;
 #endif
-
-    // registering the buffer to write state
-    ibv_mr * memoryRegion = ktm_rdma_reg_write(rdmaCmId, buffer, size);
+    // buffer needed for metadata exchange
+    char * rdmaExcBuffer = static_cast<char *>(malloc(BUF_SIZE));
+    ibv_mr * rdmaExcMr = ktm_rdma_reg_msgs(rdmaCmId, rdmaExcBuffer, BUF_SIZE);
 
     int num_wc;
     ibv_wc workCompletion;
     memset(&workCompletion, 0, sizeof(workCompletion));
 
-    // SENDING WRITE MEMORY INFO TO THE PEER
-    char * rdmaExcBuffer = static_cast<char *>(malloc(BUF_SIZE));
-    ibv_mr * rdmaExcMr = ktm_rdma_reg_msgs(rdmaCmId, rdmaExcBuffer, BUF_SIZE);
+    // GETTING WRITE SIZE
+    ktm_rdma_post_recv(rdmaCmId, nullptr, rdmaExcBuffer, sizeof(size), rdmaExcMr);
+    num_wc = ktm_rdma_get_recv_comp(rdmaCmId, &workCompletion);
+    memcpy(&size, rdmaExcBuffer, sizeof(size));
 
+#ifdef DEBUG
+    std::cout << "ACTUAL SIZE: " << size << std::endl;
+#endif
+
+    // checking the buffer size and pointer
+    if (buffer == NULL or size < 1) {
+        char * newBuffer = (char *) realloc(buffer, size);
+        if (newBuffer == NULL) {
+            throw "RdmaCommunicator::Read(): realloc returned null...";
+        }
+        buffer = newBuffer;
+    }
+
+    // registering the buffer to write state
+    ibv_mr * memoryRegion = ktm_rdma_reg_write(rdmaCmId, buffer, size);
+
+
+    // SENDING WRITE MEMORY INFO TO THE PEER
     uintptr_t self_address = (uintptr_t) memoryRegion->addr;
     uint32_t self_rkey = memoryRegion->rkey;
 
@@ -162,32 +209,42 @@ size_t RdmaCommunicator::Read(char *buffer, size_t size) {
     ktm_rdma_post_recv(rdmaCmId, nullptr, completionMsg, 1, completionMr);
     num_wc = ktm_rdma_get_recv_comp(rdmaCmId, &workCompletion);
 
+#ifdef DEBUG
+    for (unsigned int i = 0; i < size; i++) printf("%d LETTO %02X\n", i, buffer[i]);
+#endif
+
     // some cleanup
     rdma_dereg_mr(memoryRegion);
     rdma_dereg_mr(completionMr);
     free(completionMsg);
 
-    // FIXME: Return the number of successfully read bytes instead
-    return 1;
+    return size;
 }
 
 size_t RdmaCommunicator::Write(const char *buffer, size_t size) {
 #ifdef DEBUG
-    std::cout << "RdmaCommunicator::Write(): called." << std::endl;
+    std::cout << "RdmaCommunicator::Write(): called."
+    << "Size: " << size << std::endl;
 #endif
-
-    char * actualBuffer = (char *) malloc(size);
-    memcpy(actualBuffer, buffer, size);
-    ibv_mr * memoryRegion = ktm_rdma_reg_msgs(rdmaCmId, actualBuffer, size);
+    // buffer needed for metadata exchange
+    char * rdmaExcBuffer = static_cast<char *>(malloc(BUF_SIZE));
+    ibv_mr * rdmaExcMr = ktm_rdma_reg_msgs(rdmaCmId, rdmaExcBuffer, BUF_SIZE);
 
     int num_wc;
     ibv_wc workCompletion;
     memset(&workCompletion, 0, sizeof(workCompletion));
 
-    // GETTING WRITE MEMORY INFO FROM THE PEER
-    char * rdmaExcBuffer = static_cast<char *>(malloc(BUF_SIZE));
-    ibv_mr * rdmaExcMr = ktm_rdma_reg_msgs(rdmaCmId, rdmaExcBuffer, BUF_SIZE);
+    // SENDING WRITE SIZE
+    memcpy(rdmaExcBuffer, &size, sizeof(size));
+    ktm_rdma_post_send(rdmaCmId, nullptr, rdmaExcBuffer, sizeof(size), rdmaExcMr, IBV_SEND_INLINE);
+    num_wc = ktm_rdma_get_send_comp(rdmaCmId, &workCompletion);
 
+    // registering the buffer to be sent
+    char * actualBuffer = (char *) malloc(size);
+    memcpy(actualBuffer, buffer, size);
+    ibv_mr * memoryRegion = ktm_rdma_reg_msgs(rdmaCmId, actualBuffer, size);
+
+    // GETTING WRITE MEMORY INFO FROM THE PEER
     uintptr_t peer_address = -1;
     uint32_t peer_rkey = -1;
 
@@ -225,14 +282,17 @@ size_t RdmaCommunicator::Write(const char *buffer, size_t size) {
     ktm_rdma_post_send(rdmaCmId, nullptr, completionMsg, 1, completionMr, IBV_SEND_INLINE);
     num_wc = ktm_rdma_get_send_comp(rdmaCmId, &workCompletion);
 
+#ifdef DEBUG
+    for (unsigned int i = 0; i < size; i++) printf("%d SCRITTO %02X \n", i, actualBuffer[i]);
+#endif
+
     // some cleanup
     rdma_dereg_mr(memoryRegion);
     rdma_dereg_mr(completionMr);
     free(actualBuffer);
     free(completionMsg);
 
-    // FIXME: Return the number of successfully written bytes instead
-    return 1;
+    return size;
 }
 
 void RdmaCommunicator::Sync() {

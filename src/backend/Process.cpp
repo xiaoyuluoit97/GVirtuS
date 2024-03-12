@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <functional>
 #include <thread>
+#include <iostream>
 
 using gvirtus::backend::Process;
 using gvirtus::common::LD_Lib;
@@ -41,14 +42,41 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 }
 
 bool getstring(Communicator *c, string &s) {
+    // TODO: FIX LISKOV SUBSTITUTION AND DIPENDENCE INVERSION!!!!!
+    /*
     s = "";
     char ch = 0;
     while (c->Read(&ch, 1) == 1) {
+        // If reading is ended, return true
         if (ch == 0) {
             return true;
         }
         s += ch;
     }
+    return false;
+     */
+
+    try {
+        s = "";
+        size_t size = 0;
+        char * buf = (char *) malloc(size);
+        c->Read(buf, size);
+
+        // if read, return true
+        if (size >= 0) {
+            s += std::string(buf);
+            free(buf);
+            return true;
+        }
+    }
+    catch (std::string & exc) {
+        cerr << exc;
+    }
+    catch (const char * exc) {
+        cerr << std::string(exc);
+    }
+
+
     return false;
 }
 

@@ -9,13 +9,17 @@ void ktm_rdma_getaddrinfo(char  *node,  char  *service,  struct  rdma_addrinfo  
     std::cout << "addrinfo called" << std::endl;
 #endif
 
-    if (rdma_getaddrinfo(node, service, hints, res) == -1) {
+    int addrinfoResult = rdma_getaddrinfo(node, service, hints, res);
+    if (addrinfoResult == -1) {
         throw "rdma_getaddrinfo(): error: " + std::string(strerror(errno));
+    }
+    else if (addrinfoResult != 0) {
+        throw "rdma_getaddrinfo(): error (non-zero return value): " + std::string(gai_strerror(addrinfoResult));
     }
 }
 
 void Testlib() {
-    std::cout << "ciao"  << std::endl;
+    std::cout << "ciao" << std::endl;
 }
 
 void ktm_rdma_create_ep(struct rdma_cm_id **id, struct rdma_addrinfo *res, struct ibv_pd  *pd, struct ibv_qp_init_attr *qp_init_attr) {
@@ -93,8 +97,12 @@ void ktm_rdma_post_send (struct rdma_cm_id *id, void *context, void *addr, size_
 int ktm_rdma_get_send_comp(struct rdma_cm_id *id, struct ibv_wc *wc) {
     int returned = rdma_get_send_comp(id, wc);
 
-    if (returned == -1) {
+    if (returned < 0) {
         throw "rdma_get_send_comp(): error: " + std::string(strerror(errno));
+    }
+
+    if (wc->status != IBV_WC_SUCCESS) {
+        throw "rdma_get_send_comp(): error: (completion with error) failed status " + std::string(ibv_wc_status_str(wc->status));
     }
 
     return returned;
@@ -103,8 +111,12 @@ int ktm_rdma_get_send_comp(struct rdma_cm_id *id, struct ibv_wc *wc) {
 int ktm_rdma_get_recv_comp(struct rdma_cm_id *id, struct ibv_wc *wc) {
     int returned = rdma_get_recv_comp(id, wc);
 
-    if (returned == -1) {
+    if (returned < 0) {
         throw "rdma_get_recv_comp(): error: " + std::string(strerror(errno));
+    }
+
+    if (wc->status != IBV_WC_SUCCESS) {
+        throw "rdma_get_send_comp(): error: (completion with error) failed status " + std::string(ibv_wc_status_str(wc->status));
     }
 
     return returned;
