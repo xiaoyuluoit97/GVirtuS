@@ -166,7 +166,7 @@ size_t RdmaCommunicator::Read(char *buffer, size_t size) {
         if (newBuffer == NULL) {
             throw "RdmaCommunicator::Read(): realloc returned null...";
         }
-        buffer = newBuffer;
+        *buffer = *newBuffer;
     }
 
     // registering the buffer to write state
