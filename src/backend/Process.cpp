@@ -12,6 +12,8 @@
 #include <thread>
 #include <iostream>
 
+#define DEBUG
+
 using gvirtus::backend::Process;
 using gvirtus::common::LD_Lib;
 using gvirtus::communicators::Buffer;
@@ -42,8 +44,12 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 }
 
 bool getstring(Communicator *c, string &s) {
+#ifdef DEBUG
+    printf("getstring called.\n");
+#endif
+
     // TODO: FIX LISKOV SUBSTITUTION AND DIPENDENCE INVERSION!!!!!
-    if (c->to_string == "tcpcommunicator") {
+    if (c->to_string() == "tcpcommunicator") {
         s = "";
         char ch = 0;
         while (c->Read(&ch, 1) == 1) {
@@ -55,11 +61,11 @@ bool getstring(Communicator *c, string &s) {
         }
         return false;
     }
-    else if (c->to_string == "rdmacommunicator") {
+    else if (c->to_string() == "rdmacommunicator") {
         try {
             s = "";
             size_t size = 0;
-            char * buf = (char *) malloc(size);
+            char *buf = (char *) malloc(size);
             c->Read(buf, size);
 
             // if read, return true
