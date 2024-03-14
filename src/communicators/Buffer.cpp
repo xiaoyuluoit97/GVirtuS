@@ -32,7 +32,7 @@
  *
  *
  */
-//#define DEBUG
+#define DEBUG
 #include "gvirtus/communicators/Buffer.h"
 
 using namespace std;
@@ -109,6 +109,11 @@ void Buffer::Reset(Communicator *c) {
     if ((mpBuffer = (char *)realloc(mpBuffer, mSize)) == NULL)
       throw "Can't reallocate memory.";
   }
+#ifdef DEBUG
+  for(int i = 0; i < mLength; i++)
+      printf("%c", mpBuffer[i]);
+  printf("\n");
+#endif
   c->Read(mpBuffer, mLength);
 }
 

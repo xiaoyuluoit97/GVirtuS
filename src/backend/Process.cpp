@@ -66,12 +66,14 @@ bool getstring(Communicator *c, string &s) {
             s = "";
             size_t size = 0;
             char *buf = (char *) malloc(size);
-            c->Read(buf, size);
+            size = c->Read(buf, size);
 
             // if read, return true
-            if (size >= 0) {
+            if (size > 0) {
                 s += std::string(buf);
-                free(buf);
+                printf("append\n");
+                //free(buf);
+                printf("free\n");
                 return true;
             }
         }

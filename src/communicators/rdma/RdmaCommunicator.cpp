@@ -210,7 +210,10 @@ size_t RdmaCommunicator::Read(char *buffer, size_t size) {
     num_wc = ktm_rdma_get_recv_comp(rdmaCmId, &workCompletion);
 
 #ifdef DEBUG
-    for (unsigned int i = 0; i < size; i++) printf("%d LETTO %02X\n", i, buffer[i]);
+    //for (unsigned int i = 0; i < size; i++) printf("%d LETTO %02X\n", i, buffer[i]);
+    printf("letto: ");
+    for (unsigned int i = 0; i < size; i++) printf("%c", buffer[i]);
+    printf("\n");
 #endif
 
     // some cleanup
@@ -283,7 +286,10 @@ size_t RdmaCommunicator::Write(const char *buffer, size_t size) {
     num_wc = ktm_rdma_get_send_comp(rdmaCmId, &workCompletion);
 
 #ifdef DEBUG
-    for (unsigned int i = 0; i < size; i++) printf("%d SCRITTO %02X \n", i, actualBuffer[i]);
+    //for (unsigned int i = 0; i < size; i++) printf("%d SCRITTO %02X \n", i, actualBuffer[i]);
+    printf("scritto: ");
+    for (unsigned int i = 0; i < size; i++) printf("%c", buffer[i]);
+    printf("\n");
 #endif
 
     // some cleanup
