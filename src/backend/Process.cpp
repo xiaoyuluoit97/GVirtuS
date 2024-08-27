@@ -64,7 +64,7 @@ bool getstring(Communicator *c, string &s) {
     else if (c->to_string() == "rdmacommunicator") {
         try {
             s = "";
-            size_t size = 0;
+            size_t size = 30;
             char *buf = (char *) malloc(size);
             size = c->Read(buf, size);
 
