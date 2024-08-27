@@ -25,8 +25,8 @@ namespace gvirtus::communicators {
         rdma_cm_id * rdmaCmId;
         rdma_cm_id * rdmaCmListenId;
 
-        char * hostname;
-        char * port;
+        char hostname[256];
+        char port[6];
 
         ibv_wc workCompletion;
 

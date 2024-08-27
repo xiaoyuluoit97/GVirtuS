@@ -28,10 +28,16 @@ RdmaCommunicator::RdmaCommunicator(char * hostname, char * port) {
         throw "RdmaCommunicator: Can't resolve hostname \"" + std::string(hostname) + "\"...";
     }
 
-    auto addrLen = ent->h_length;
-    this->hostname = new char[addrLen];
-    memcpy(this->hostname, *ent->h_addr_list, addrLen);
-    this->port = port;
+    //auto addrLen = ent->h_length;
+    //this->hostname = new char[addrLen];
+    //memcpy(this->hostname, *ent->h_addr_list, addrLen);
+    strcpy(this->hostname, hostname);
+    strcpy(this->port, port);
+
+#ifdef DEBUG
+    std::cout << "RdmaCommunicator(" << this->hostname << ", " << this->port << ")" << std::endl;
+    std::cout << strlen(hostname) << " " << strlen(port) << std::endl;
+#endif
 
     memset(&rdmaCmId, 0, sizeof(rdmaCmId));
     memset(&rdmaCmListenId, 0, sizeof(rdmaCmListenId));
@@ -65,9 +71,7 @@ void RdmaCommunicator::Serve() {
 
     rdma_addrinfo * rdmaAddrinfo;
 
-    char testhost[50] = "192.168.4.101";
-    char testport[50] = "9999";
-    ktm_rdma_getaddrinfo(testhost, testport, &hints, &rdmaAddrinfo);
+    ktm_rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
 
     // Create communication manager id with queue pair attributes
     ibv_qp_init_attr qpInitAttr;
@@ -117,9 +121,7 @@ void RdmaCommunicator::Connect() {
 
     rdma_addrinfo * rdmaAddrinfo;
 
-    char testhost[50] = "192.168.4.101";
-    char testport[50] = "9999";
-    ktm_rdma_getaddrinfo(testhost, testport, &hints, &rdmaAddrinfo);
+    ktm_rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
 
     // Create communication manager id with queue pair attributes
     ibv_qp_init_attr qpInitAttr;
