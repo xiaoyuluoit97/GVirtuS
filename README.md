@@ -155,8 +155,6 @@ Currently supported transmission means are:
 "suite": "infiniband-rdma",
 "protocol": "ib", 
 ```
-Note that RDMA over Infiniband is currently under development and it's performances are really poor.
-
 
 To run `gvirtus-backend` server application, perform the following command:
 
