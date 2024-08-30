@@ -13,7 +13,7 @@ class Endpoint_Tcp : public Endpoint {
                         const std::string &endp_address,
                         const std::string &endp_port);
 
-  Endpoint_Tcp(const std::string &endp_suite)
+  explicit Endpoint_Tcp(const std::string &endp_suite)
       : Endpoint_Tcp(endp_suite, "tcp", "127.0.0.1", "9999") {}
 
   Endpoint &suite(const std::string &suite) override;
@@ -52,7 +52,8 @@ class Endpoint_Tcp : public Endpoint {
    */
   virtual inline const std::string to_string() const {
     return _suite + _protocol + _address + std::to_string(_port);
-  };
+  }
+
 
  private:
   std::string _address;

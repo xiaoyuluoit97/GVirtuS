@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <functional>
 #include <thread>
+#include <iostream>
+
+#define DEBUG
 
 using gvirtus::backend::Process;
 using gvirtus::common::LD_Lib;
@@ -30,7 +33,7 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 
     std::string logLevelString = (val == NULL ? std::string("") : std::string(val));
 
-    if (logLevelString != "") {
+    if (!logLevelString.empty()) {
         logLevel = std::stoi(logLevelString);
     }
     logger.setLogLevel(logLevel);
@@ -41,15 +44,49 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 }
 
 bool getstring(Communicator *c, string &s) {
-    s = "";
-    char ch = 0;
-    while (c->Read(&ch, 1) == 1) {
-        if (ch == 0) {
-            return true;
+#ifdef DEBUG
+    printf("getstring called.\n");
+#endif
+
+    // TODO: FIX LISKOV SUBSTITUTION AND DIPENDENCE INVERSION!!!!!
+    if (c->to_string() == "tcpcommunicator") {
+        s = "";
+        char ch = 0;
+        while (c->Read(&ch, 1) == 1) {
+            // If reading is ended, return true
+            if (ch == 0) {
+                return true;
+            }
+            s += ch;
         }
-        s += ch;
+        return false;
     }
-    return false;
+    else if (c->to_string() == "rdmacommunicator") {
+        try {
+            s = "";
+            size_t size = 30;
+            char *buf = (char *) malloc(size);
+            size = c->Read(buf, size);
+
+            // if read, return true
+            if (size > 0) {
+                s += std::string(buf);
+                printf("append\n");
+                //free(buf);
+                printf("free\n");
+                return true;
+            }
+        }
+        catch (std::string & exc) {
+            cerr << exc;
+        }
+        catch (const char * exc) {
+            cerr << std::string(exc);
+        }
+        return false;
+    }
+
+    throw "Communicator getstring read error... Unknown communicator type...";
 }
 
 extern std::string getEnvVar(std::string const &key);

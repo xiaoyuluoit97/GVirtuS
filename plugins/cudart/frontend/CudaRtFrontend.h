@@ -49,13 +49,20 @@ typedef struct __configureFunction {
 
 class CudaRtFrontend {
  public:
-  static inline void Execute(const char* routine,
-                             const Buffer* input_buffer = NULL) {
+  static inline void Execute(const char* routine, const Buffer* input_buffer = NULL) {
 #ifdef DEBUG
     if (string(routine) != "cudaLaunch")
-      cerr << "Requesting " << routine << endl;
+      cerr << "[Cuda Runtime Frontend]: Requesting " << routine << endl;
 #endif
-    gvirtus::frontend::Frontend::GetFrontend()->Execute(routine, input_buffer);
+      try {
+          gvirtus::frontend::Frontend::GetFrontend()->Execute(routine, input_buffer);
+      }
+      catch (std::string e) {
+          cerr << "Execution exception: " << e << endl;
+      }
+      catch (const char * e) {
+          cerr << "Execution exception: " << e << endl;
+      }
   }
 
   /**
