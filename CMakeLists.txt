@@ -56,6 +56,9 @@ add_library(gvirtus-communicators SHARED
         src/communicators/EndpointFactory.cpp
         src/communicators/rdma/ktmrdma.cpp
         src/communicators/Result.cpp
+
+        src/communicators/Endpoint_Rdma_Roce.cpp
+
         )
 target_link_libraries(gvirtus-communicators gvirtus-common rdmacm ibverbs)
 gvirtus_install_target(gvirtus-communicators)
@@ -67,7 +70,6 @@ target_link_libraries(gvirtus-communicators-tcp gvirtus-communicators)
 gvirtus_install_target(gvirtus-communicators-tcp)
 
 ## IB COMMUNICATOR
-## TODO: PROPERLY SETUP CMAKE AND PROJECT TO USE RDMA
 add_library(gvirtus-communicators-ib SHARED
         src/communicators/rdma/ktmrdma.cpp
         src/communicators/rdma/RdmaCommunicator.cpp
@@ -75,6 +77,18 @@ add_library(gvirtus-communicators-ib SHARED
 ##target_include_directories(gvirtus-communicators-ib PUBLIC /usr/include/infiniband /usr/include/rdma /src/communicators/rdma)
 target_link_libraries(gvirtus-communicators-ib gvirtus-communicators rdmacm ibverbs)
 gvirtus_install_target(gvirtus-communicators-ib)
+
+
+## ROCE RDMA COMMUNICATOR
+add_library(gvirtus-communicators-roce SHARED
+        src/communicators/rdma_roce/ktmrdma.cpp
+        src/communicators/rdma_roce/RdmaRoceCommunicator.cpp
+        )
+
+##target_include_directories(gvirtus-communicators-ib PUBLIC /usr/include/infiniband /usr/include/rdma /src/communicators/rdma)
+target_link_libraries(gvirtus-communicators-roce gvirtus-communicators rdmacm ibverbs)
+gvirtus_install_target(gvirtus-communicators-roce)
+
 
 add_library(gvirtus-frontend SHARED
         src/frontend/Frontend.cpp)

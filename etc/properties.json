@@ -2,9 +2,9 @@
   "communicator": [
     {
       "endpoint": {
-        "suite": "tcp/ip",
-        "protocol": "tcp",
-        "server_address": "127.0.0.1",
+        "suite": "roce-rdma",
+        "protocol": "roce",
+        "server_address": "1.1.1.5",
         "port": "9999"
       },
       "plugins": [

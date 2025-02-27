@@ -80,12 +80,128 @@ void CudaRtHandler::setLogLevel(Logger *logger) {
   logger->setLogLevel(logLevel);
 }
 
+
 bool CudaRtHandler::CanExecute(std::string routine) {
   map<string, CudaRtHandler::CudaRoutineHandler>::iterator it;
   it = mspHandlers->find(routine);
   if (it == mspHandlers->end()) return false;
   return true;
 }
+
+
+
+// Gives the proof even after both input(header.first) and output(routine) same but still it fails to runs
+
+// bool CudaRtHandler::CanExecute(std::string routine) {
+//   // Trim the input routine and handler
+//   std::cout << "Checking if routine exists: '" << routine << "'" << std::endl;
+
+//   // Debug: Print all the routines stored in mspHandlers
+//   //std::cout << "Registered routines in mspHandlers:" << std::endl;
+
+//   for (auto& handler : *mspHandlers) {
+//       // std::cout << " - " << handler.first << std::endl;
+
+//       if (handler.first == "cudaRegisterFatBinary") {
+//         std::cout << "Registered routines in mspHandlers and passing routine are same:" << std::endl;
+
+//         if (routine == "cudaRegisterFatBinary") {
+//           std::cout << " routine name is same as cudaRegisterFatBinary" << std::endl;
+//         }
+//         else {
+//           std::cout << "routine name is not same as cudaRegisterFatBinary" << std::endl;
+
+//           std::cout << "routine name is "<< routine << std::endl;
+//         }
+//       }
+//   }
+//   map<string, CudaRtHandler::CudaRoutineHandler>::iterator it;
+//   it = mspHandlers->find(routine);
+  
+//   if (it == mspHandlers->end()) {
+//       std::cout << "Routine not found in handlers: " << routine << std::endl;
+//       return false;
+//   }
+  
+//   std::cout << "Routine found: " << routine << std::endl;
+//   return true;
+// }
+
+
+
+
+// This works--------------- After removing some null characters but throws string error
+// bool CudaRtHandler::CanExecute(std::string routine) {
+//   std::cout << "Checking if routine exists: '" << routine << "'" << std::endl;
+
+//   try {
+//       // Trim trailing null characters (if any)
+//       routine.erase(std::find(routine.begin(), routine.end(), '\0'), routine.end());
+
+//       std::cout << "Checking routine after trimming: '" << routine << "'" << std::endl;
+
+//       // Check if routine exists in mspHandlers
+//       map<string, CudaRtHandler::CudaRoutineHandler>::iterator it;
+//       it = mspHandlers->find(routine);
+
+//       if (it == mspHandlers->end()) {
+//           std::cout << "Routine not found in handlers: " << routine << std::endl;
+//           return false;
+//       }
+
+//       std::cout << "Routine found: " << routine << std::endl;
+//       return true;
+
+//   } catch (const std::exception &e) {
+//       std::cerr << "Exception caught in CanExecute: " << e.what() << std::endl;
+//       return false;
+//   } catch (...) {
+//       std::cerr << "Unknown exception caught in CanExecute" << std::endl;
+//       return false;
+//   }
+// }
+
+
+
+//Comparision work
+
+// bool CudaRtHandler::CanExecute(std::string routine) {
+//   std::cout << "Checking if routine exists: " << routine << std::endl;
+
+//   // Remove trailing null characters (ASCII: 0) from the routine string
+//   routine.erase(std::find(routine.begin(), routine.end(), '\0'), routine.end());
+
+//   // Log the length and ASCII value of each character in the string
+//   for (char c : routine) {
+//       std::cout << "Routine char: " << c << " ASCII: " << int(c) << std::endl;
+//   }
+
+//   for (auto& handler : *mspHandlers) {
+//       // std::cout << " - " << handler.first << std::endl;
+
+//       if (handler.first == "cudaRegisterFatBinary") {
+//         std::cout << "Registered routines in mspHandlers and passing routine are same:" << std::endl;
+
+//       for (char c : handler.first) {
+//       std::cout << "handler.firstchar: " << c << " ASCII: " << int(c) << std::endl;
+//       }
+
+//       }
+//   }
+
+//   map<string, CudaRtHandler::CudaRoutineHandler>::iterator it;
+//   it = mspHandlers->find(routine);
+
+//   if (it == mspHandlers->end()) {
+//       std::cout << "Routine not found in handlers: " << routine << std::endl;
+//       return false;
+//   }
+
+//   std::cout << "Routine found: " << routine << std::endl;
+//   return true;
+// }
+
+
 
 std::shared_ptr<Result> CudaRtHandler::Execute(
     std::string routine, std::shared_ptr<Buffer> input_buffer) {
@@ -286,8 +402,17 @@ const char *CudaRtHandler::GetSymbol(std::shared_ptr<Buffer> in) {
 }
 
 void CudaRtHandler::Initialize() {
-  if (mspHandlers != NULL) return;
+  if (mspHandlers != NULL)  return;
   mspHandlers = new map<string, CudaRtHandler::CudaRoutineHandler>();
+
+  std::cout << "Initializing CudaRtHandler..." << std::endl;  // Debug log
+
+  mspHandlers = new map<string, CudaRtHandler::CudaRoutineHandler>();
+  // Insert routines...
+  mspHandlers->insert(CUDA_ROUTINE_HANDLER_PAIR(RegisterFatBinary));
+  // Log to verify it's inserted
+  std::cout << "Registered routine: cudaRegisterFatBinary" << std::endl;
+
 
   /* CudaRtHandler_device */
   mspHandlers->insert(CUDA_ROUTINE_HANDLER_PAIR(ChooseDevice));
@@ -445,3 +570,4 @@ void CudaRtHandler::Initialize() {
   mspHandlers->insert(CUDA_ROUTINE_HANDLER_PAIR(FuncSetCacheConfig));
 #endif
 }
+

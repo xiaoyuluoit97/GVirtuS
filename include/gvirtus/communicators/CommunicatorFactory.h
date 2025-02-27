@@ -10,6 +10,7 @@
 #include "Endpoint.h"
 #include "Endpoint_Tcp.h"
 #include "Endpoint_Rdma.h"
+#include "Endpoint_Rdma_Roce.h"
 
 //#define DEBUG
 
@@ -39,7 +40,8 @@ namespace gvirtus::communicators {
                                                         "http",
                                                         "oldtcp",
                                                         "ws",
-                                                        "ib"
+                                                        "ib",
+                                                        "roce"
             };
 
             // Supported secure communicators

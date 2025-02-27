@@ -6,6 +6,7 @@
 #include "Endpoint.h"
 #include "Endpoint_Rdma.h"
 #include "Endpoint_Tcp.h"
+#include "Endpoint_Rdma_Roce.h"
 
 //#define DEBUG
 
@@ -39,6 +40,14 @@ class EndpointFactory {
         auto end = common::JSON<Endpoint_Rdma>(json_path).parser();
         ptr = std::make_shared<Endpoint_Rdma>(end);
     }
+    // rdma-roce
+    else if ("roce-rdma" == j["communicator"][ind_endpoint]["endpoint"].at("suite")) {
+#ifdef DEBUG
+        std::cout << "EndpointFactory::get_endpoint() found rdma-roce endpoint" << std::endl;
+#endif
+        auto end = common::JSON<Endpoint_Rdma_Roce>(json_path).parser();
+        ptr = std::make_shared<Endpoint_Rdma_Roce>(end);
+    }
     else {
         throw "EndpointFactory::get_endpoint(): Your suite is not compatible!";
     }
@@ -49,7 +58,7 @@ class EndpointFactory {
     ifs.close();
 
 #ifdef DEBUG
-    std::cout << "EndpointFactoru::get_endpoint(): end is: " << ptr->to_string() << std::endl;
+    std::cout << "EndpointFactory::get_endpoint(): end is: " << ptr->to_string() << std::endl;
     std::cout << "EndpointFactory::get_endpoint() ended" << std::endl;
 #endif
 
