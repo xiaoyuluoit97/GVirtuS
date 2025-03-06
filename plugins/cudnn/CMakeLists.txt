@@ -1,25 +1,30 @@
 cmake_minimum_required(VERSION 3.17)
 project(gvirtus-plugin-cudnn)
 
+# Ensure CUDA is found
 find_package(CUDA REQUIRED)
 
+# Explicitly find cudnn.h
 find_path(CUDNN_INCLUDE_DIRECTORY
-        cudnn.h
-        PATHS ${CUDA_INCLUDE_DIRS})
+    cudnn.h
+    PATHS /usr/local/cuda/include)
 if(NOT CUDNN_INCLUDE_DIRECTORY)
-    message(FATAL_ERROR "cudnn.h not found")
+    message(FATAL_ERROR "cudnn.h not found in /usr/local/cuda/include")
 endif()
+message(STATUS "Found cuDNN header: ${CUDNN_INCLUDE_DIRECTORY}")
+
 include_directories(${CUDNN_INCLUDE_DIRECTORY} ${CUDA_INCLUDE_DIRS})
 
-get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_CUDART_LIBRARY} DIRECTORY FALSE)
+# Find cuDNN library
 find_library(CUDNN_LIBRARY
-        cudnn
-        PATHS ${CUDA_LIBRARIES_PATH})
+    cudnn
+    PATHS /usr/local/cuda/lib64)
 if(NOT CUDNN_LIBRARY)
-    message(FATAL_ERROR "cudnn library not found")
+    message(FATAL_ERROR "cuDNN library not found in /usr/local/cuda/lib64")
 endif()
 message(STATUS "Found cuDNN library: ${CUDNN_LIBRARY}")
 
+# Extract cuDNN version
 set(CUDNN_VERSION "${CUDNN_LIBRARY}")
 while(IS_SYMLINK "${CUDNN_VERSION}")
     message(STATUS "${CUDNN_VERSION}")
@@ -31,8 +36,8 @@ string(REGEX REPLACE ".*\\.so\\.([0-9]+\\.[0-9]+\\.[0-9]+)" "\\1" CUDNN_VERSION 
 
 message(STATUS "Found cuDNN: ${CUDNN_VERSION} (${CUDNN_INCLUDE_DIRECTORY}/cudnn.h, ${CUDNN_LIBRARY})")
 
-gvirtus_add_backend(cudnn ${CUDNN_VERSION}
-        backend/CudnnHandler.cpp)
+# Add backend and frontend
+gvirtus_add_backend(cudnn ${CUDNN_VERSION} backend/CudnnHandler.cpp)
 target_link_libraries(${PROJECT_NAME} ${CUDNN_LIBRARY})
 
 gvirtus_add_frontend(cudnn ${CUDNN_VERSION}
