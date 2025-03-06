@@ -11,6 +11,7 @@
 #include <functional>
 #include <thread>
 #include <iostream>
+#include <cstring>
 
 #define DEBUG
 
@@ -44,12 +45,11 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 }
 
 bool getstring(Communicator *c, std::string &s) {
-    #ifdef DEBUG
-        printf("getstring called.\n");
-    #endif
-    
+    // #ifdef DEBUG
+    //     printf("getstring called.\n");
+    // #endif
+
         std::string communicator_type = c->to_string();  // Get the communicator type
-        printf("Communicator type: %s\n", communicator_type.c_str());  // Log the type
     
         // TODO: FIX LISKOV SUBSTITUTION AND DEPENDENCE INVERSION!!!!!
         if (communicator_type == "tcpcommunicator") {
@@ -66,31 +66,45 @@ bool getstring(Communicator *c, std::string &s) {
             return false;
         }
 
+
         else if (communicator_type == "rdmacommunicator" || communicator_type == "rdma_roce_communicator") {
-            // RDMA communicator (modified logic for RDMA)
-            try {
-                s = "";
-                size_t size = 30;  // Initial buffer size for reading
-                char *buf = (char *)malloc(size);  // Allocate memory for reading
-                size_t read_size = c->Read(buf, size);  // Read data from the communicator
-    
-                // Check if read was successful and append to the string
-                if (read_size > 0) {
-                    s += std::string(buf, read_size);  // Append the read data to the string
-                    printf("append\n");
-                    free(buf);  // Free the allocated buffer after use
-                    printf("free\n");
+        // RDMA communicator (modified logic for RDMA)
+        try {
+            s = "";
 
-                    std::cout << "read_size: " << read_size << std::endl; 
+            // Initial buffer size set to a reasonable default (e.g., 30 bytes)
+            size_t size = 30;
+            char *buf = (char *)malloc(size);  // Allocate memory for reading
 
-                    std::cout << "len of s " << s.length() << std::endl; 
+            // Read data from the communicator
+            size_t read_size = c->Read(buf, size);  
 
-                   std::cout << "s: " << s << std::endl;    //Says CudaRegisterFactBinary success
+            // Dynamically adjust the buffer size if the read data exceeds the initial buffer size
+            if (read_size > size) {
+                free(buf);  // Free the previous buffer if it’s too small
+                buf = (char *)malloc(read_size);  // Allocate new buffer with the correct size
+                read_size = c->Read(buf, read_size);  // Re-read the data into the new buffer
+            }
 
-                    return true;
+            // Trim null characters (ASCII: 0) from the end of the data (Remove the last bytes if that equal to 0)
+            size_t trimmed_size = read_size;
+
+            // Trace the entire string and remove characters after the first null character
+            for (size_t i = 0; i < trimmed_size; ++i) {
+                if (buf[i] == 0) {
+                    trimmed_size = i;  // Cut off the string at the first null character
+                break;
                 }
             }
 
+            // Check if the read was successful and append the trimmed data to the string
+            if (trimmed_size > 0) {
+                s += std::string(buf, trimmed_size);  // Append the trimmed read data to the string
+                free(buf);  // Free the allocated buffer after use
+
+                return true;
+            }
+            }
             catch (std::string &exc) {
                 std::cerr << "Exception: " << exc << std::endl;
             }
@@ -99,55 +113,6 @@ bool getstring(Communicator *c, std::string &s) {
             }
             return false;
         }
-
-
-        // else if (communicator_type == "rdmacommunicator" || communicator_type == "rdma_roce_communicator") {
-        //     // RDMA communicator (modified logic for RDMA)
-        //     try {
-        //         s = "";
-                
-        //         // Initial buffer size set to a reasonable default (e.g., 30 bytes)
-        //         size_t size = 30;
-        //         char *buf = (char *)malloc(size);  // Allocate memory for reading
-        
-        //         // Read data from the communicator
-        //         size_t read_size = c->Read(buf, size);  
-        
-        //         // Dynamically adjust the buffer size if the read data exceeds the initial buffer size
-        //         if (read_size > size) {
-        //             free(buf);  // Free the previous buffer if it’s too small
-        //             buf = (char *)malloc(read_size);  // Allocate new buffer with the correct size
-        //             read_size = c->Read(buf, read_size);  // Re-read the data into the new buffer
-        //         }
-        
-        //         // Check if read was successful and append to the string
-        //         if (read_size > 0) {
-        //             s += std::string(buf, read_size);  // Append the read data to the string
-        //             printf("append\n");
-        //             free(buf);  // Free the allocated buffer after use
-        //             printf("free\n");
-        
-        //             // Debug prints
-        //             std::cout << "read_size: " << read_size << std::endl;
-        //             std::cout << "len of s " << s.length() << std::endl;
-        //             // std::cout << "s: " << s << std::endl;  // Print received data (e.g., "cudaRegisterFatBinary")
-        
-        //             // // Debug routine characters
-        //             // for (char c : s) {
-        //             //     std::cout << "Routine staring char: " << c << " ASCII: " << int(c) << std::endl;
-        //             // }
-        
-        //             return true;
-        //         }
-        //     }
-        //     catch (std::string &exc) {
-        //         std::cerr << "Exception: " << exc << std::endl;
-        //     }
-        //     catch (const char *exc) {
-        //         std::cerr << "Exception: " << exc << std::endl;
-        //     }
-        //     return false;
-        // }
         
         // If an unrecognized communicator type is encountered
         std::cerr << "Unknown communicator type: " << communicator_type << std::endl;
@@ -207,18 +172,10 @@ void Process::Start() {
             LOG4CPLUS_DEBUG(logger, "✓ - Received routine: " << routine);
             std::cout << "✓ - Received routine: " << routine << std::endl;  //Unitll this point "cudaRegisterFatBinary" present
 
-            // for (char c : routine) {
-            //     std::cout << "Routine char before pass: " << c << " ASCII: " << int(c) << std::endl;
-            // }
-
             input_buffer->Reset(client_comm);
 
             std::shared_ptr<Handler> h = nullptr;
             for (auto &ptr_el : _handlers) {
-
-                //std::cout <<"rountines coming inside loop"<< ptr_el->obj_ptr()<<std::endl;
-
-                //std::cout << "Routine passed to CanExecute: " << routine << std::endl;
                 // Log handler type and routine check
                 LOG4CPLUS_DEBUG(logger, "✓ - Checking if handler can execute routine: " << routine);
                 if (ptr_el->obj_ptr()->CanExecute(routine)) {   //passing the routine(cudaRegisterFatBinary Library) Checks the possibility of ececution?
