@@ -8,10 +8,6 @@
 namespace gvirtus::communicators {
 
 RdmaRoceCommunicator::RdmaRoceCommunicator(char *hostname, char *port) {
-#ifdef DEBUG
-    std::cout << "Called " << "RdmaRoceCommunicator(char *hostname, char *port)" << std::endl;
-#endif
-
     if (port == nullptr || std::string(port).empty()) {
         throw std::runtime_error("RdmaRoceCommunicator: Port not specified...");
     }
@@ -25,10 +21,6 @@ RdmaRoceCommunicator::RdmaRoceCommunicator(char *hostname, char *port) {
     // Copy the hostname and port to the member variables
     strncpy(this->hostname, hostname, sizeof(this->hostname) - 1);
     strncpy(this->port, port, sizeof(this->port) - 1);
-
-#ifdef DEBUG
-    std::cout << "RdmaRoceCommunicator(" << this->hostname << ", " << this->port << ")" << std::endl;
-#endif
 
     // Initialize RDMA context structures for RoCE
     memset(&roceCmId, 0, sizeof(roceCmId));
@@ -53,158 +45,164 @@ RdmaRoceCommunicator::~RdmaRoceCommunicator() {
 
 
 void RdmaRoceCommunicator::Serve() {
-#ifdef DEBUG
-    std::cout << "Called " << "Serve()" << std::endl;
-#endif
+    // std::cout << "Starting RoCE server on " << hostname << ":" << port << std::endl;
 
-    // Setup address info for RDMA over Converged Ethernet (RoCE)
+    // Step 1: Setup the rdma_addrinfo struct for RoCE (RDMA over Converged Ethernet)
     rdma_addrinfo hints;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_port_space = RDMA_PS_TCP;  // Use TCP port space for RoCE (not RDMA_PS_IB)
-    hints.ai_flags = RAI_PASSIVE;  // Passive mode to accept incoming connections
 
-    rdma_addrinfo *rdmaAddrinfo;
+    // Set the address family to AF_INET (IPv4) because RoCE typically uses Ethernet with IPv4
+    hints.ai_family = AF_INET;
+    // Set the port space to RDMA_PS_TCP for RoCE (not RDMA_PS_IB)
+    hints.ai_port_space = RDMA_PS_TCP;
+    // RAI_PASSIVE indicates we are the passive side of the connection
+    hints.ai_flags = RAI_PASSIVE;
 
-    // Get address info based on hostname and port for RoCE communication
-    ktm_rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
+    rdma_addrinfo *rdmaAddrinfo = nullptr;
 
-    // Create communication manager ID with queue pair attributes
+    // Step 2: Resolve the destination host and port using the rdma_getaddrinfo function
+    int ret = rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
+    if (ret != 0) {
+        std::cerr << "rdma_getaddrinfo failed: " << gai_strerror(ret) << std::endl;
+        throw std::runtime_error("rdma_getaddrinfo() failed while resolving hostname and port.");
+    }
+
+    // Step 3: Initialize Queue Pair (QP) attributes
     ibv_qp_init_attr qpInitAttr;
     memset(&qpInitAttr, 0, sizeof(qpInitAttr));
+    qpInitAttr.cap.max_send_wr = 10;  // Maximum send work requests
+    qpInitAttr.cap.max_recv_wr = 10;  // Maximum receive work requests
+    qpInitAttr.cap.max_send_sge = 10; // Maximum send scatter-gather elements
+    qpInitAttr.cap.max_recv_sge = 10; // Maximum receive scatter-gather elements
+    qpInitAttr.sq_sig_all = 1;        // Sign all send completions
+    qpInitAttr.qp_type = IBV_QPT_RC;  // Reliable Connection (RC) Queue Pair type
 
-    // Set up the queue pair attributes for RoCE
-    qpInitAttr.cap.max_send_wr = 10;
-    qpInitAttr.cap.max_recv_wr = 10;
-    qpInitAttr.cap.max_send_sge = 10;
-    qpInitAttr.cap.max_recv_sge = 10;
-    qpInitAttr.sq_sig_all = 1;  // Sign all send completions
-    qpInitAttr.qp_type = IBV_QPT_RC;  // Reliable Connection (RC) queue pair type
+    // Step 4: Create the endpoint for RDMA communication
+    ktm_rdma_create_ep(&roceCmListenId, rdmaAddrinfo, nullptr, &qpInitAttr);
 
-    // Create endpoint for RDMA RoCE communication
-    ktm_rdma_create_ep(&roceCmListenId, rdmaAddrinfo, NULL, &qpInitAttr);
-
-    // Free the address info once it's no longer needed
+    // Step 5: Free the address info structure as it's no longer needed
     rdma_freeaddrinfo(rdmaAddrinfo);
 
-    // Listen for incoming connections on the RoCE endpoint
+    // Step 6: Start listening for incoming connections
     ktm_rdma_listen(roceCmListenId, BACKLOG);
 
-    std::cout << "RdmaRoceCommunicator: Listening for incoming RoCE connections on port " << this->port << std::endl;
 }
 
 
 
-const gvirtus::communicators::Communicator *const RdmaRoceCommunicator::Accept() const {
-    std::cout << "Accepting incoming RoCE connection..." << std::endl;
 
+const Communicator *const RdmaRoceCommunicator::Accept() const {
+    // 1. Get the incoming connection request
     rdma_cm_id *clientRdmaCmId;
+    ktm_rdma_get_request(roceCmListenId, &clientRdmaCmId);  // Receives connection request
 
-    // Get the request for the incoming RoCE connection
-    ktm_rdma_get_request(roceCmListenId, &clientRdmaCmId);
+    // 2. Accept the incoming request
+    ktm_rdma_accept(clientRdmaCmId, nullptr);  // Accepts the connection request
 
-    // Accept the RoCE connection
-    ktm_rdma_accept(clientRdmaCmId, nullptr);
-
-    // Set the queue pair attributes for RoCE (using IBV_QP_MIN_RNR_TIMER here)
+    // 3. Modify Queue Pair attributes to set minimum RNR timer (to avoid connection timeouts)
     auto *ibvQpAttr = static_cast<ibv_qp_attr *>(malloc(sizeof(ibv_qp_attr)));
-    ibvQpAttr->min_rnr_timer = 1;  // Set RoCE-specific parameters
-
-    // Modify the queue pair with the new attributes
+    ibvQpAttr->min_rnr_timer = 1;  // Set minimal RNR timer for faster connection setup
     if (ibv_modify_qp(clientRdmaCmId->qp, ibvQpAttr, IBV_QP_MIN_RNR_TIMER)) {
-        std::cerr << "ibv_modify_qp() failed: " << strerror(errno) << std::endl;
-        return nullptr;
+        std::cerr << "Failed to modify Queue Pair attributes: " << strerror(errno) << std::endl;
     }
 
-    // Return a new RdmaRoceCommunicator with the accepted client connection ID
-    return new RdmaRoceCommunicator(clientRdmaCmId);
+    // 4. Return a new communicator instance to handle the established connection
+    return new RdmaRoceCommunicator(clientRdmaCmId);  // Returns a new communicator with the accepted connection
 }
 
 
 void RdmaRoceCommunicator::Connect() {
-    std::cout << "Connecting to RoCE endpoint at " << hostname << ":" << port << std::endl;
+    // std::cout << "Connecting to RoCE endpoint at " << hostname << ":" << port << std::endl;
 
-    // Setup address info for RDMA over Converged Ethernet (RoCE)
+    // Step 1: Setup the rdma_addrinfo struct for RoCE (RDMA over Converged Ethernet)
     rdma_addrinfo hints;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;              // Use IPv4 address family (RoCE uses Ethernet typically)
-    hints.ai_port_space = RDMA_PS_TCP;      // RoCE uses TCP port space (not IB port space)
-    hints.ai_flags = 0;                     // No flags set for client-side connection
 
-    rdma_addrinfo *rdmaAddrinfo;
+    // Set the address family to AF_INET (IPv4) because RoCE typically uses Ethernet with IPv4
+    hints.ai_family = AF_INET;  // Use IPv4 address family (Ethernet typically uses IPv4)
+    // Set the port space to RDMA_PS_TCP for RoCE (not RDMA_PS_IB)
+    hints.ai_port_space = RDMA_PS_TCP;  
+    // No RAI_PASSIVE flag for the client-side
+    hints.ai_flags = 0;  // Active side of the connection (no passive flag)
 
-    // Resolve the address using hostname and port for RoCE communication
-    ktm_rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
+    rdma_addrinfo *rdmaAddrinfo = nullptr;
 
-    // Create communication manager ID with queue pair attributes for RoCE
-    ibv_qp_init_attr qpInitAttr;
-    memset(&qpInitAttr, 0, sizeof(qpInitAttr));
-
-    // Set up the queue pair attributes for RoCE
-    qpInitAttr.cap.max_send_wr = 10;
-    qpInitAttr.cap.max_recv_wr = 10;
-    qpInitAttr.cap.max_send_sge = 10;
-    qpInitAttr.cap.max_recv_sge = 10;
-    qpInitAttr.sq_sig_all = 1;              // Sign all send completions
-    qpInitAttr.qp_type = IBV_QPT_RC;        // Use reliable connection queue pair type
-
-    // Create RoCE endpoint
-    ktm_rdma_create_ep(&roceCmId, rdmaAddrinfo, nullptr, &qpInitAttr);
-    rdma_freeaddrinfo(rdmaAddrinfo);        // Free the address info once it's no longer needed
-
-    // Connect to the RoCE endpoint
-    ktm_rdma_connect(roceCmId, nullptr);
-
-    // Modify the queue pair attributes after connection (RoCE-specific)
-    auto *ibvQpAttr = static_cast<ibv_qp_attr *>(malloc(sizeof(ibv_qp_attr)));
-    ibvQpAttr->min_rnr_timer = 1;  // Set RoCE-specific parameter (Minimum Retry Not Ready Timer)
-
-    if (ibv_modify_qp(roceCmId->qp, ibvQpAttr, IBV_QP_MIN_RNR_TIMER)) {
-        std::cerr << "ibv_modify_qp() failed: " << strerror(errno) << std::endl;
+    // Step 2: Resolve the destination host and port using the rdma_getaddrinfo function
+    int ret = rdma_getaddrinfo(this->hostname, this->port, &hints, &rdmaAddrinfo);
+    if (ret != 0) {
+        std::cerr << "rdma_getaddrinfo failed: " << gai_strerror(ret) << std::endl;
+        throw std::runtime_error("rdma_getaddrinfo() failed while resolving hostname and port.");
     }
 
-    // Register the memory for RoCE communication (if needed)
+    // Step 3: Initialize Queue Pair (QP) attributes for client
+    ibv_qp_init_attr qpInitAttr;
+    memset(&qpInitAttr, 0, sizeof(qpInitAttr));
+    qpInitAttr.cap.max_send_wr = 10;  // Maximum send work requests
+    qpInitAttr.cap.max_recv_wr = 10;  // Maximum receive work requests
+    qpInitAttr.cap.max_send_sge = 10; // Maximum send scatter-gather elements
+    qpInitAttr.cap.max_recv_sge = 10; // Maximum receive scatter-gather elements
+    qpInitAttr.sq_sig_all = 1;        // Sign all send completions
+    qpInitAttr.qp_type = IBV_QPT_RC;  // Reliable Connection (RC) Queue Pair type
+
+    // Step 4: Create the RDMA endpoint for the client (this initiates the connection)
+    ktm_rdma_create_ep(&roceCmId, rdmaAddrinfo, nullptr, &qpInitAttr);
+
+    // Step 5: Free the address info structure as it's no longer needed
+    rdma_freeaddrinfo(rdmaAddrinfo);
+
+    // Step 6: Perform the connection to the remote server (client-side)
+    ktm_rdma_connect(roceCmId, nullptr);
+
+    // Step 7: Modify the Queue Pair (QP) attributes (set minimum retry timer)
+    auto *ibvQpAttr = static_cast<ibv_qp_attr *>(malloc(sizeof(ibv_qp_attr)));
+    ibvQpAttr->min_rnr_timer = 1;  // Set to the lowest retry timer value
+    if (ibv_modify_qp(roceCmId->qp, ibvQpAttr, IBV_QP_MIN_RNR_TIMER)) {
+        std::cerr << "ibv_modify_qp() failed: " << strerror(errno) << std::endl;
+        throw std::runtime_error("Failed to modify Queue Pair (QP) attributes.");
+    }
+
+    // Step 8: Perform memory region registration (buffer preregistration)
     preregisteredMr = ktm_rdma_reg_msgs(roceCmId, preregisteredBuffer, 1024 * 5);
 }
 
 
-size_t RdmaRoceCommunicator::Read(char *buffer, size_t size) {
-    std::cout << "Reading " << size << " bytes over RoCE" << std::endl;
 
-    // If the size is smaller than the pre-registered buffer, use the pre-registered buffer
-    if (size < 1024 * 5) {
+size_t RdmaRoceCommunicator::Read(char *buffer, size_t size) {
+
+    // Check if the size of the data to be read is smaller or equal to the preregistered buffer
+    if (size <= 1024 * 5) {
+        // If the output buffer is smaller than or equal to the preregistered buffer size
+        // Just use the preregistered buffer for reading the data
         ktm_rdma_post_recv(roceCmId, nullptr, preregisteredBuffer, size, preregisteredMr);
-    } else {
-        // Register memory for receiving data if the size is larger than the pre-registered buffer
+    }
+    else {
+        // If the output buffer is larger than the preregistered buffer
+        // Register a new memory region for the new buffer
         memoryRegion = ktm_rdma_reg_msgs(roceCmId, buffer, size);
-        // Post the receive request to the RoCE endpoint
+        // Post the receive operation into the newly registered memory region
         ktm_rdma_post_recv(roceCmId, nullptr, buffer, size, memoryRegion);
     }
 
-    // Poll the completion queue for the work completion event (indicating read operation completion)
+    // Poll the completion queue for the completion of the receive operation
     int num_comp;
-    do {
-        num_comp = ibv_poll_cq(roceCmId->recv_cq, 1, &workCompletion);
-    } while (num_comp == 0); // Continue polling until completion
-
+    do num_comp = ibv_poll_cq(roceCmId->recv_cq, 1, &workCompletion); while (num_comp == 0);
     if (num_comp < 0) {
         throw std::runtime_error("ibv_poll_cq() failed during read operation");
     }
-
     if (workCompletion.status != IBV_WC_SUCCESS) {
-        throw std::runtime_error("Failed to read data: " + std::string(ibv_wc_status_str(workCompletion.status)));
+        throw std::runtime_error("Failed status in ibv_poll_cq: " + std::string(ibv_wc_status_str(workCompletion.status)));
     }
 
-    // If the size is smaller than the pre-registered buffer, copy the data into the user-provided buffer
-    if (size < 1024 * 5) {
+    // If the buffer is smaller than or equal to the preregistered buffer, copy the data from the preregistered buffer
+    if (size <= 1024 * 5) {
         memcpy(buffer, preregisteredBuffer, size);
     }
 
-    return size; // Return the number of bytes read
+    return size;
 }
 
-
 size_t RdmaRoceCommunicator::Write(const char *buffer, size_t size) {
-    std::cout << "Writing " << size << " bytes over RoCE" << std::endl;
+    // std::cout << "Writing " << size << " bytes over RoCE" << std::endl;
 
     char *actualBuffer = nullptr;
 
@@ -246,52 +244,17 @@ size_t RdmaRoceCommunicator::Write(const char *buffer, size_t size) {
 }
 
 
-void RdmaRoceCommunicator::Sync() {
-    std::cout << "Synchronizing RoCE connection..." << std::endl;
-
-    // Ensure that all RDMA operations are completed by polling the completion queue
-    int num_comp;
-    do {
-        // Poll the send completion queue for any work completions
-        num_comp = ibv_poll_cq(roceCmId->send_cq, 1, &workCompletion);
-    } while (num_comp == 0);  // Continue polling if no completions yet
-
-    // Handle errors during polling for send operations
-    if (num_comp < 0) {
-        throw std::runtime_error("ibv_poll_cq() failed during synchronization");
-    }
-
-    if (workCompletion.status != IBV_WC_SUCCESS) {
-        throw std::runtime_error("Failed to synchronize RoCE connection: " + std::string(ibv_wc_status_str(workCompletion.status)));
-    }
-
-    // Similarly, you may want to poll the receive completion queue to ensure receive operations are completed
-    do {
-        // Poll the receive completion queue for any work completions
-        num_comp = ibv_poll_cq(roceCmId->recv_cq, 1, &workCompletion);
-    } while (num_comp == 0);  // Continue polling if no completions yet
-
-    // Handle errors during polling for receive operations
-    if (num_comp < 0) {
-        throw std::runtime_error("ibv_poll_cq() failed during receive synchronization");
-    }
-
-    if (workCompletion.status != IBV_WC_SUCCESS) {
-        throw std::runtime_error("Failed to synchronize receive: " + std::string(ibv_wc_status_str(workCompletion.status)));
-    }
-
-    std::cout << "RoCE synchronization complete." << std::endl;
-}
+void RdmaRoceCommunicator::Sync() { }
 
 
 void RdmaRoceCommunicator::Close() {
-    std::cout << "Closing RoCE connection..." << std::endl;
+    // std::cout << "Closing RoCE connection..." << std::endl;
 
     // Ensure that any active RDMA connections are properly disconnected before cleanup
     if (roceCmId) {
         rdma_disconnect(roceCmId);  // Disconnect the RDMA connection
         rdma_destroy_id(roceCmId);  // Destroy the communication manager ID
-        std::cout << "RoCE connection closed successfully." << std::endl;
+        // std::cout << "RoCE connection closed successfully." << std::endl;
     } else {
         std::cout << "No active RoCE connection found to close." << std::endl;
     }
@@ -300,17 +263,13 @@ void RdmaRoceCommunicator::Close() {
     if (preregisteredMr) {
         ibv_dereg_mr(preregisteredMr);  // Deregister the memory region
         preregisteredMr = nullptr;      // Nullify the pointer to avoid further access
-        std::cout << "Deregistered preregistered memory region." << std::endl;
     }
 
     if (memoryRegion) {
         ibv_dereg_mr(memoryRegion);  // Deregister the memory region
         memoryRegion = nullptr;      // Nullify the pointer to avoid further access
-        std::cout << "Deregistered additional memory region." << std::endl;
     }
 
-    // Perform any other necessary resource cleanup (if applicable)
-    // Placeholder for additional cleanup logic
 }
 
 
@@ -325,3 +284,4 @@ extern "C" std::shared_ptr<gvirtus::communicators::Communicator> create_communic
 
 
 } // namespace gvirtus::communicators
+
