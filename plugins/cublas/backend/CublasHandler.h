@@ -40,7 +40,7 @@
 #include <string>
 #include <memory>
 
-#include <cublas.h>
+// #include <cublas.h>                    //Depreicated for cuda.12.2 version
 #include "cublas_v2.h"
 
 #include <gvirtus/backend/Handler.h>

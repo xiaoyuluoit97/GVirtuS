@@ -109,18 +109,18 @@ class CudaRtHandler : public gvirtus::backend::Handler {
   const char *GetVar(std::string &handler);
   const char *GetVar(const char *handler);
 
-  void RegisterTexture(std::string &handler, textureReference *texref);
-  void RegisterTexture(const char *handler, textureReference *texref);
-  void RegisterSurface(std::string &handler, surfaceReference *surref);
-  void RegisterSurface(const char *handler, surfaceReference *surref);
-  textureReference *GetTexture(std::string &handler);
-  textureReference *GetTexture(pointer_t handler);
-  textureReference *GetTexture(const char *handler);
-  const char *GetTextureHandler(textureReference *texref);
-  surfaceReference *GetSurface(std::string &handler);
-  surfaceReference *GetSurface(pointer_t handler);
-  surfaceReference *GetSurface(const char *handler);
-  const char *GetSurfaceHandler(surfaceReference *texref);
+  void RegisterTexture(std::string &handler, cudaTextureObject_t *texref);
+  void RegisterTexture(const char *handler, cudaTextureObject_t *texref);
+  void RegisterSurface(std::string &handler, cudaSurfaceObject_t *surref);
+  void RegisterSurface(const char *handler, cudaSurfaceObject_t *surref);
+  cudaTextureObject_t *GetTexture(std::string &handler);
+  cudaTextureObject_t *GetTexture(pointer_t handler);
+  cudaTextureObject_t *GetTexture(const char *handler);
+  const char *GetTextureHandler(cudaTextureObject_t *texref);
+  cudaSurfaceObject_t *GetSurface(std::string &handler);
+  cudaSurfaceObject_t *GetSurface(pointer_t handler);
+  cudaSurfaceObject_t *GetSurface(const char *handler);
+  const char *GetSurfaceHandler(cudaSurfaceObject_t *texref);
 
   const char *GetSymbol(std::shared_ptr<Buffer> in);
 
@@ -168,8 +168,8 @@ class CudaRtHandler : public gvirtus::backend::Handler {
   std::map<std::string, void **> *mpFatBinary;
   std::map<std::string, std::string> *mpDeviceFunction;
   std::map<std::string, std::string> *mpVar;
-  std::map<std::string, textureReference *> *mpTexture;
-  std::map<std::string, surfaceReference *> *mpSurface;
+  std::map<std::string, cudaTextureObject_t *> *mpTexture;
+  std::map<std::string, cudaSurfaceObject_t *> *mpSurface;
   map<std::string, NvInfoFunction>* mapDeviceFunc2InfoFunc;
   map<const void *,std::string>* mapHost2DeviceFunc;
   void *mpShm;

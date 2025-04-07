@@ -34,17 +34,37 @@ CUDA_ROUTINE_HANDLER(BindTexture) {
     size_t *offset = out->Delegate<size_t>();
     *offset = *(input_buffer->Assign<size_t>());
     char *texrefHandler = input_buffer->AssignString();
-    textureReference *guestTexref = input_buffer->Assign<textureReference>();
-    textureReference *texref = pThis->GetTexture(texrefHandler);
-    memmove(texref, guestTexref, sizeof(textureReference));
-
+    cudaTextureObject_t guestTexref = *(input_buffer->Assign<cudaTextureObject_t>());
+    cudaTextureObject_t* texref = pThis->GetTexture(texrefHandler);
+    *texref = guestTexref; 
+    
     void *devPtr = input_buffer->GetFromMarshal<void *>();
     cudaChannelFormatDesc *desc = input_buffer->Assign<cudaChannelFormatDesc>();
     size_t size = input_buffer->Get<size_t>();
-    cudaError_t exit_code = cudaBindTexture(offset, texref, devPtr, desc, size);
+
+    // Allocate and copy to CUDA array
+    cudaArray_t devArray;
+    if (cudaMallocArray(&devArray, desc, size, 1) != cudaSuccess ||
+        cudaMemcpyToArray(devArray, 0, 0, devPtr, size, cudaMemcpyDeviceToDevice) != cudaSuccess) {
+      return std::make_shared<Result>(cudaErrorMemoryAllocation);
+    }
+
+    // Create texture object with resource and texture descriptors
+    cudaResourceDesc resDesc = {};
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = devArray;
+
+    cudaTextureDesc texDesc = {};
+    texDesc.addressMode[0] = texDesc.addressMode[1] = cudaAddressModeClamp;
+    texDesc.filterMode = cudaFilterModePoint;
+    texDesc.readMode = cudaReadModeElementType;
+
+    cudaTextureObject_t texObj;
+    cudaError_t exit_code = cudaCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr);
+
     return std::make_shared<Result>(exit_code, out);
-  } catch (string e) {
-    cerr << e << endl;
+  } catch (const std::string& e) {
+    std::cerr << e << std::endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);
   }
 }
@@ -56,29 +76,42 @@ CUDA_ROUTINE_HANDLER(BindTexture) {
 
 CUDA_ROUTINE_HANDLER(BindTexture2D) {
   try {
-    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
-
+    auto out = std::make_shared<Buffer>();
     size_t *offset = out->Delegate<size_t>();
-    size_t *temp = input_buffer->Assign<size_t>();
-    if (temp != NULL)
-      *offset = *temp;
-    else
-      *offset = 0;
-    char *texrefHandler = input_buffer->AssignString();
-    textureReference *guestTexref = input_buffer->Assign<textureReference>();
+    size_t *offsetIn = input_buffer->Assign<size_t>();
+    *offset = offsetIn ? *offsetIn : 0;
 
-    textureReference *texref = pThis->GetTexture(texrefHandler);
-    memmove(texref, guestTexref, sizeof(textureReference));
-    void *devPtr = (void *)input_buffer->Get<pointer_t>();
-    cudaChannelFormatDesc *desc = input_buffer->Assign<cudaChannelFormatDesc>();
+    char *texrefHandler = input_buffer->AssignString();
+    cudaTextureObject_t *guestTexref = input_buffer->Assign<cudaTextureObject_t>();
+    cudaTextureObject_t *texref = pThis->GetTexture(texrefHandler);
+    *texref = *guestTexref;
+
+    void *devPtr = reinterpret_cast<void *>(input_buffer->Get<pointer_t>());
+    auto desc = input_buffer->Assign<cudaChannelFormatDesc>();
     size_t width = input_buffer->Get<size_t>();
     size_t height = input_buffer->Get<size_t>();
     size_t pitch = input_buffer->Get<size_t>();
-    cudaError_t exit_code =
-        cudaBindTexture2D(offset, texref, devPtr, desc, width, height, pitch);
+
+    cudaArray_t devArray;
+    cudaMallocArray(&devArray, desc, width, height, cudaArrayDefault);
+    cudaMemcpy2DToArray(devArray, 0, 0, devPtr, pitch, width * (desc->x + desc->y + desc->z + desc->w) / 8, height, cudaMemcpyDeviceToDevice);
+
+    cudaResourceDesc resDesc = {};
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = devArray;
+
+    cudaTextureDesc texDesc = {};
+    texDesc.addressMode[0] = texDesc.addressMode[1] = cudaAddressModeClamp;
+    texDesc.filterMode = cudaFilterModePoint;
+    texDesc.readMode = cudaReadModeElementType;
+
+    cudaTextureObject_t texObj;
+    cudaError_t exit_code = cudaCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr);
+    *texref = texObj;
+
     return std::make_shared<Result>(exit_code, out);
-  } catch (string e) {
-    cerr << e << endl;
+  } catch (const std::string &e) {
+    std::cerr << e << std::endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);
   }
 }
@@ -86,19 +119,36 @@ CUDA_ROUTINE_HANDLER(BindTexture2D) {
 
 CUDA_ROUTINE_HANDLER(BindTextureToArray) {
   try {
-    char *texrefHandler = input_buffer->AssignString();
-    textureReference *guestTexref = input_buffer->Assign<textureReference>();
-    textureReference *texref = pThis->GetTexture(texrefHandler);
-    memmove(texref, guestTexref, sizeof(textureReference));
-    cudaArray *array = (cudaArray *)input_buffer->Get<pointer_t>();
-    cudaChannelFormatDesc *desc = input_buffer->Assign<cudaChannelFormatDesc>();
-    cudaError_t exit_code = cudaBindTextureToArray(texref, array, desc);
+    auto texrefHandler = input_buffer->AssignString();
+    cudaTextureObject_t guestTexref = *input_buffer->Assign<cudaTextureObject_t>();
+    cudaTextureObject_t *texref = pThis->GetTexture(texrefHandler);
+    *texref = guestTexref;
+
+    auto array = reinterpret_cast<cudaArray_t>(input_buffer->Get<pointer_t>());
+    auto desc = input_buffer->Assign<cudaChannelFormatDesc>();
+
+    // Prepare resource and texture descriptors
+    cudaResourceDesc resDesc = {};
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = array;
+
+    cudaTextureDesc texDesc = {};
+    texDesc.addressMode[0] = texDesc.addressMode[1] = cudaAddressModeClamp;
+    texDesc.filterMode = cudaFilterModePoint;
+    texDesc.readMode = cudaReadModeElementType;
+
+    // Create the texture object
+    cudaTextureObject_t texObj;
+    cudaError_t exit_code = cudaCreateTextureObject(&texObj, &resDesc, &texDesc, nullptr);
+    *texref = texObj;
+
     return std::make_shared<Result>(exit_code);
-  } catch (string e) {
-    cerr << e << endl;
+  } catch (const std::string& e) {
+    std::cerr << e << std::endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);
   }
 }
+
 
 CUDA_ROUTINE_HANDLER(GetChannelDesc) {
   try {
@@ -119,52 +169,57 @@ CUDA_ROUTINE_HANDLER(GetChannelDesc) {
 
 CUDA_ROUTINE_HANDLER(GetTextureAlignmentOffset) {
   try {
-    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
-
+    auto out = std::make_shared<Buffer>();
     size_t *offset = out->Delegate<size_t>();
+
     *offset = *(input_buffer->Assign<size_t>());
+
     char *texrefHandler = input_buffer->AssignString();
-    textureReference *guestTexref = input_buffer->Assign<textureReference>();
-    textureReference *texref = pThis->GetTexture(texrefHandler);
-    memmove(texref, guestTexref, sizeof(textureReference));
-    cudaError_t exit_code = cudaGetTextureAlignmentOffset(offset, texref);
+    cudaTextureObject_t* guestTexref = input_buffer->Assign<cudaTextureObject_t>();
+    cudaTextureObject_t *texref = pThis->GetTexture(texrefHandler);
+
+    *texref = *guestTexref;
+
+    cudaError_t exit_code = cudaSuccess;      // Alignment offset retrieval is deprecated with cudaTextureObject_t
     return std::make_shared<Result>(exit_code, out);
-  } catch (string e) {
-    cerr << e << endl;
+  } catch (const std::string &e) {
+    std::cerr << e << std::endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);
   }
 }
 
+
+
 CUDA_ROUTINE_HANDLER(GetTextureReference) {
-  textureReference *texref;
   try {
-    char *symbol_handler = input_buffer->AssignString();
-    char *symbol = input_buffer->AssignString();
-    char *our_symbol = const_cast<char *>(pThis->GetVar(symbol_handler));
-    if (our_symbol != NULL) symbol = const_cast<char *>(our_symbol);
+    auto symbol_handler = input_buffer->AssignString();
+    auto symbol = input_buffer->AssignString();
+    auto our_symbol = const_cast<char *>(pThis->GetVar(symbol_handler));
+    if (our_symbol != nullptr) symbol = our_symbol;
 
-    cudaError_t exit_code =
-        cudaGetTextureReference((const textureReference **)&texref, symbol);
-
+    // Texture references are deprecated, so just return a placeholder or use your own registry
     std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
+    cudaTextureObject_t* texref = pThis->GetTexture(symbol);
 
-    if (exit_code == cudaSuccess)
+    if (texref && *texref != 0)
       out->AddString(pThis->GetTextureHandler(texref));
     else
       out->AddString("0x0");
-    return std::make_shared<Result>(exit_code, out);
-  } catch (string e) {
-    cerr << e << endl;
+
+    return std::make_shared<Result>(cudaSuccess, out);
+  } catch (const std::string& e) {
+    std::cerr << e << std::endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);
   }
 }
+
 
 CUDA_ROUTINE_HANDLER(UnbindTexture) {
   try {
     char *texrefHandler = input_buffer->AssignString();
-    textureReference *texref = pThis->GetTexture(texrefHandler);
-    cudaError_t exit_code = cudaUnbindTexture(texref);
-    return std::make_shared<Result>(exit_code);
+    cudaTextureObject_t *texref = pThis->GetTexture(texrefHandler);
+    cudaError_t exit_code = cudaDestroyTextureObject(*texref);
+        return std::make_shared<Result>(exit_code);
   } catch (string e) {
     cerr << e << endl;
     return std::make_shared<Result>(cudaErrorMemoryAllocation);

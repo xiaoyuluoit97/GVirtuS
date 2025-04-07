@@ -25,7 +25,9 @@
 #ifndef CUBLASFRONTEND_H
 #define	CUBLASFRONTEND_H
 
-#include <cublas.h>
+#define CUBLASAPI
+
+// #include <cublas.h>         //Deprecated
 #include <cublas_api.h>
 #include "cublas_v2.h"
 #include <cuda_runtime_api.h>
