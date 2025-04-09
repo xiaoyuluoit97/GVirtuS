@@ -31,7 +31,7 @@
 using namespace std;
 
 extern "C" __host__ cudaError_t CUDARTAPI
-cudaBindSurfaceToArray(const surfaceReference *surfref, const cudaArray *array,
+cudaBindSurfaceToArray(const cudaSurfaceObject_t *surfref, const cudaArray *array,
                        const cudaChannelFormatDesc *desc) {
   CudaRtFrontend::Prepare();
 

@@ -48,22 +48,22 @@ gvirtus_add_backend(cudart ${CUDA_VERSION}
         util/CudaUtil.cpp)
 target_link_libraries(${PROJECT_NAME} ${CUDA_CUDART_LIBRARY})
 
-# gvirtus_add_frontend(cudart ${CUDA_VERSION}
-#         frontend/CudaRt.cpp
-#         frontend/CudaRt_device.cpp
-#         frontend/CudaRt_error.cpp
-#         frontend/CudaRt_event.cpp
-#         frontend/CudaRt_execution.cpp
-#         frontend/CudaRtFrontend.cpp
-#         frontend/CudaRt_internal.cpp
-#         frontend/CudaRt_memory.cpp
-#         frontend/CudaRt_occupancy.cpp
-#         frontend/CudaRt_opengl.cpp
-#         frontend/CudaRt_stream.cpp
-#         frontend/CudaRt_surface.cpp
-#         frontend/CudaRt_texture.cpp
-#         frontend/CudaRt_thread.cpp
-#         frontend/CudaRt_version.cpp
-#         util/CudaUtil.cpp)
+gvirtus_add_frontend(cudart ${CUDA_VERSION}
+        frontend/CudaRt.cpp
+        frontend/CudaRt_device.cpp
+        frontend/CudaRt_error.cpp
+        frontend/CudaRt_event.cpp
+        frontend/CudaRt_execution.cpp
+        frontend/CudaRtFrontend.cpp
+        frontend/CudaRt_internal.cpp
+        frontend/CudaRt_memory.cpp
+        frontend/CudaRt_occupancy.cpp
+        frontend/CudaRt_opengl.cpp
+        frontend/CudaRt_stream.cpp
+        frontend/CudaRt_surface.cpp
+        frontend/CudaRt_texture.cpp
+        frontend/CudaRt_thread.cpp
+        frontend/CudaRt_version.cpp
+        util/CudaUtil.cpp)
 
 add_subdirectory(demo)

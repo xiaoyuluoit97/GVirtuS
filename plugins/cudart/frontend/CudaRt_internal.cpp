@@ -220,7 +220,7 @@ extern "C" __host__ void __cudaRegisterSharedVar(void **fatCubinHandle,
 }
 
 extern "C" __host__ void __cudaRegisterTexture(void **fatCubinHandle,
-                                               const textureReference *hostVar,
+                                               const cudaTextureObject_t *hostVar,
                                                void **deviceAddress,
                                                char *deviceName, int dim,
                                                int norm, int ext) {
@@ -228,7 +228,7 @@ extern "C" __host__ void __cudaRegisterTexture(void **fatCubinHandle,
   CudaRtFrontend::AddStringForArguments(
       CudaUtil::MarshalHostPointer(fatCubinHandle));
   CudaRtFrontend::AddStringForArguments(CudaUtil::MarshalHostPointer(hostVar));
-  // Achtung: passing the address and the content of the textureReference
+  // Achtung: passing the address and the content of the cudaTextureObject_t
   CudaRtFrontend::AddHostPointerForArguments(hostVar);
   CudaRtFrontend::AddStringForArguments((char *)deviceAddress);
   CudaRtFrontend::AddStringForArguments(deviceName);
@@ -239,7 +239,7 @@ extern "C" __host__ void __cudaRegisterTexture(void **fatCubinHandle,
 }
 
 extern "C" __host__ void __cudaRegisterSurface(void **fatCubinHandle,
-                                               const surfaceReference *hostVar,
+                                               const cudaSurfaceObject_t *hostVar,
                                                void **deviceAddress,
                                                char *deviceName, int dim,
                                                int ext) {
@@ -247,7 +247,7 @@ extern "C" __host__ void __cudaRegisterSurface(void **fatCubinHandle,
   CudaRtFrontend::AddStringForArguments(
       CudaUtil::MarshalHostPointer(fatCubinHandle));
   CudaRtFrontend::AddStringForArguments(CudaUtil::MarshalHostPointer(hostVar));
-  // Achtung: passing the address and the content of the textureReference
+  // Achtung: passing the address and the content of the cudaTextureObject_t
   CudaRtFrontend::AddHostPointerForArguments(hostVar);
   CudaRtFrontend::AddStringForArguments((char *)deviceAddress);
   CudaRtFrontend::AddStringForArguments(deviceName);

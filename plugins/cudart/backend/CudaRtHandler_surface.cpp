@@ -30,21 +30,53 @@ using namespace std;
 
 // extern const surfaceReference *getSurface(const surfaceReference *handler);
 
+// CUDA_ROUTINE_HANDLER(BindSurfaceToArray) {
+//   char *surfrefHandler = input_buffer->AssignString();
+
+//   surfaceReference *guestSurfref = input_buffer->Assign<surfaceReference>();
+
+//   surfaceReference *surfref = pThis->GetSurface(surfrefHandler);
+//   cudaChannelFormatDesc *a = &(surfref->channelDesc);
+//   memmove(surfref, guestSurfref, sizeof(surfaceReference));
+//   cudaArray *array = (cudaArray *)input_buffer->Get<pointer_t>();
+//   cudaChannelFormatDesc *desc = input_buffer->Assign<cudaChannelFormatDesc>();
+
+//   cudaError_t exit_code = cudaBindSurfaceToArray(surfref, array, desc);
+
+//   return std::make_shared<Result>(exit_code);
+// }
+
+
 CUDA_ROUTINE_HANDLER(BindSurfaceToArray) {
-  char *surfrefHandler = input_buffer->AssignString();
+  try {
+    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
 
-  surfaceReference *guestSurfref = input_buffer->Assign<surfaceReference>();
+    // Read handler string (optional in this case if you're storing surface objects)
+    char *surfrefHandler = input_buffer->AssignString();
 
-  surfaceReference *surfref = pThis->GetSurface(surfrefHandler);
-  cudaChannelFormatDesc *a = &(surfref->channelDesc);
-  memmove(surfref, guestSurfref, sizeof(surfaceReference));
-  cudaArray *array = (cudaArray *)input_buffer->Get<pointer_t>();
-  cudaChannelFormatDesc *desc = input_buffer->Assign<cudaChannelFormatDesc>();
+    // Get array from input
+    cudaArray_t array = reinterpret_cast<cudaArray_t>(input_buffer->Get<pointer_t>());
 
-  cudaError_t exit_code = cudaBindSurfaceToArray(surfref, array, desc);
+    // Setup resource descriptor for the array
+    cudaResourceDesc resDesc = {};
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = array;
 
-  return std::make_shared<Result>(exit_code);
+    // Create surface object
+    cudaSurfaceObject_t surfaceObj = 0;
+    cudaError_t exit_code = cudaCreateSurfaceObject(&surfaceObj, &resDesc);
+
+    // Store or return the created surface object
+    out->Add<cudaSurfaceObject_t>(surfaceObj);
+    return std::make_shared<Result>(exit_code, out);
+
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return std::make_shared<Result>(cudaErrorMemoryAllocation);
+  }
 }
+
+
 
 // CUDA_ROUTINE_HANDLER(GetTextureReference) {
 //    textureReference *texref;

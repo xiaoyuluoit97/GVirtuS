@@ -47,6 +47,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>             //Added since std::max function issue arises (Fixes the max() not declared error)
+using std::max;    
+using std::min;
+
 #include <cuda_runtime_api.h>
 
 #include <gvirtus/backend/Handler.h>

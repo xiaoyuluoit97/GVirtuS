@@ -81,12 +81,15 @@ extern void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 extern void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
                                     size_t size, size_t alignment, int storage);
 extern void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr);
+
 extern void __cudaRegisterTexture(void **fatCubinHandle,
-                                  const textureReference *hostVar,
+                                  const cudaTextureObject_t *hostVar,
                                   void **deviceAddress, char *deviceName,
                                   int dim, int norm, int ext);
+
+
 extern void __cudaRegisterSurface(void **fatCubinHandle,
-                                  const surfaceReference *hostVar,
+                                  const cudaSurfaceObject_t *hostVar,
                                   void **deviceAddress, char *deviceName,
                                   int dim, int ext);
 }
@@ -97,8 +100,8 @@ static size_t constStrings_size = 0;
 static size_t constStrings_length = 0;
 // static void ** fatCubinHandlers[2048];
 // static void * fatCubins[2048];
-// static const textureReference * texrefHandlers[2048];
-// static const textureReference * texref[2048];
+// static const cudaTextureObject_t * texrefHandlers[2048];
+// static const cudaTextureObject_t * texref[2048];
 
 static void init() {
   //    constStrings_size = 2048;
@@ -149,8 +152,8 @@ void removeFatBinary(void **handler) {
 
 }
 
-void addTexture(struct textureReference *handler,
-        struct textureReference *ref) {
+void addTexture(struct cudaTextureObject_t *handler,
+        struct cudaTextureObject_t *ref) {
     if (!initialized)
         init();
     int i;
@@ -161,7 +164,7 @@ void addTexture(struct textureReference *handler,
     texref[i] = ref;
 }
 
-const textureReference *getTexture(const textureReference *handler) {
+const cudaTextureObject_t *getTexture(const cudaTextureObject_t *handler) {
     int i;
     for (i = 0; i < 2048; i++) {
         if (texrefHandlers[i] == handler) {
@@ -426,9 +429,9 @@ CUDA_ROUTINE_HANDLER(RegisterTexture) {
     char *handler = input_buffer->AssignString();
     void **fatCubinHandle = pThis->GetFatBinary(handler);
     char *hostVarPtr = input_buffer->AssignString();
-    textureReference *texture = new textureReference;
-    memmove(texture, input_buffer->Assign<textureReference>(),
-            sizeof(textureReference));
+    cudaTextureObject_t *texture = new cudaTextureObject_t;
+    memmove(texture, input_buffer->Assign<cudaTextureObject_t>(),
+            sizeof(cudaTextureObject_t));
     pThis->RegisterTexture(hostVarPtr, texture);
     const char *deviceAddress = get_const_string(input_buffer->AssignString());
     const char *deviceName = get_const_string(input_buffer->AssignString());
@@ -455,8 +458,8 @@ CUDA_ROUTINE_HANDLER(RegisterTexture) {
 #if 0
     try {
         handler = input_buffer->AssignString();
-        textureReference *hostVar = new textureReference;
-        memmove(hostVar, input_buffer->Assign<textureReference > (), sizeof (textureReference));
+        cudaTextureObject_t *hostVar = new cudaTextureObject_t;
+        memmove(hostVar, input_buffer->Assign<cudaTextureObject_t > (), sizeof (cudaTextureObject_t));
         void **deviceAddress = (void **) input_buffer->AssignAll<char>();
         char *deviceName = strdup(input_buffer->AssignString());
         int dim = input_buffer->Get<int>();
@@ -480,9 +483,9 @@ CUDA_ROUTINE_HANDLER(RegisterSurface) {
     char *handler = input_buffer->AssignString();
     void **fatCubinHandle = pThis->GetFatBinary(handler);
     char *hostVarPtr = input_buffer->AssignString();
-    surfaceReference *surface = new surfaceReference;
-    memmove(surface, input_buffer->Assign<surfaceReference>(),
-            sizeof(surfaceReference));
+    cudaSurfaceObject_t *surface = new cudaSurfaceObject_t;
+    memmove(surface, input_buffer->Assign<cudaSurfaceObject_t>(),
+            sizeof(cudaSurfaceObject_t));
     pThis->RegisterSurface(hostVarPtr, surface);
     const char *deviceAddress = get_const_string(input_buffer->AssignString());
     const char *deviceName = get_const_string(input_buffer->AssignString());
