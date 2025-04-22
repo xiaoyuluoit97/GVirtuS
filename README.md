@@ -50,7 +50,7 @@ The GPU Virtualization Service (GVirtuS) presented in this work tries to fill th
 * **OS:** CentOS 7.3 or Ubuntu 18.04 (note that those are tested OSes, but GVirtuS could be virtually installed anywhere)
 
 * **CUDA Toolkit:** Supports upto Version 12.2
-* 
+  
 * **CUDNN Library:** Supports upto Version 8.9.7
 
 Furthermore, those packages are required:
