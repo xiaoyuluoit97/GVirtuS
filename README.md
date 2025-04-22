@@ -49,7 +49,9 @@ The GPU Virtualization Service (GVirtuS) presented in this work tries to fill th
 
 * **OS:** CentOS 7.3 or Ubuntu 18.04 (note that those are tested OSes, but GVirtuS could be virtually installed anywhere)
 
-* **CUDA Toolkit:** Version 10.2 or above
+* **CUDA Toolkit:** Supports upto Version 12.2
+* 
+* **CUDNN Library:** Supports upto Version 8.9.7
 
 Furthermore, those packages are required:
 
@@ -208,16 +210,16 @@ export GVIRTUS_CONFIG=$HOME/dev/properties.json
 ```
 
 Now we have to compile our CUDA application.
+By default **GVirtuS** will be installed in `${HOME}/GVirtuS`. To override this behavior **export the GVIRTUS_HOME variable BEFORE RUNNING CMAKE**, i.e.:
+
+```
+export GVIRTUS_HOME=/Your/GVirtuS/Path 
+```
 
 If `nvcc` is being used, **be sure to compile using shared libraries**:
 
 ```
 export EXTRA_NVCCFLAGS="--cudart=shared"
-```
-
-Now compile the CUDA application. A potential `nvcc` command could be:
-```
-nvcc example.cu -o example --cudart=shared
 ```
 
 In order to tell your applications to use GVirtuS libraries, export the **dynamic GVirtuS library** with the following command. **THIS STEP IS FUNDAMENTAL**:
@@ -227,6 +229,11 @@ export LD_LIBRARY_PATH=${GVIRTUS_HOME}/lib:${GVIRTUS_HOME}/lib/frontend:${LD_LIB
 ```
 
 `ldd`command could be useful to check whether the CUDA application is using GVirtuS libraries.
+
+Now compile the CUDA application. A potential `nvcc` command could be (also make sure to be present in example.cu file located directory):
+```
+nvcc example.cu -o example -L ${GVIRTUS_HOME}/lib/frontend -L ${GVIRTUS_HOME}/lib/ -lcuda -lcudart -lcublas 
+```
 
 If everything is correctly set up, the cuda application can be eventually run through GVirtuS, in a transparent fashion:
 
