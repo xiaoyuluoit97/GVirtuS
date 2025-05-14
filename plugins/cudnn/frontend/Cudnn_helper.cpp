@@ -30,7 +30,7 @@
 #include "CudnnFrontend.h"
 
 using namespace std;
-
+/**
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate        (cudnnHandle_t *handle) {
     CudnnFrontend::Prepare();
     //CudnnFrontend::AddHostPointerForArguments<cudnnHandle_t>(handle);
@@ -46,6 +46,26 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy       (cudnnHandle_t handle) {
     CudnnFrontend::Execute("cudnnDestroy");
     return CudnnFrontend::GetExitCode();
 }
+**/
+extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate(cudnnHandle_t *handle) {
+    CudnnFrontend::Prepare();
+    CudnnFrontend::Execute("cudnnCreate");
+    if (CudnnFrontend::Success())
+        *handle = (cudnnHandle_t)CudnnFrontend::GetOutputVariable<int>();
+    return CudnnFrontend::GetExitCode();
+}
+
+extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy(cudnnHandle_t handle) {
+    CudnnFrontend::Prepare();
+
+    int handle_id = static_cast<int>(reinterpret_cast<uintptr_t>(handle));
+    CudnnFrontend::AddVariableForArguments<int>(handle_id);
+
+    CudnnFrontend::Execute("cudnnDestroy");
+    return CudnnFrontend::GetExitCode();
+}
+
+
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetStream     (cudnnHandle_t handle, cudaStream_t streamId) {
     CudnnFrontend::Prepare();
     CudnnFrontend::AddDevicePointerForArguments(handle);
