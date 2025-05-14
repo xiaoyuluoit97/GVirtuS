@@ -34,6 +34,10 @@ using namespace log4cplus;
 
 std::map<string, CudnnHandler::CudnnRoutineHandler> * CudnnHandler::mspHandlers = NULL;
 
+
+static std::map<int, cudnnHandle_t> handle_pool;
+static int next_handle_id = 1;
+
 extern "C" std::shared_ptr<CudnnHandler> create_t() {
     return std::make_shared<CudnnHandler>();
 }
@@ -42,6 +46,16 @@ extern "C" std::shared_ptr<CudnnHandler> create_t() {
 extern "C" int HandlerInit() {
     return 0;
 }
+
+cudnnHandle_t get_handle(int id, Logger& logger) {
+    auto it = handle_pool.find(id);
+    if (it == handle_pool.end()) {
+        LOG4CPLUS_ERROR(logger, "Invalid handle ID: " + std::to_string(id));
+        throw std::string("Invalid cudnn handle ID");
+    }
+    return it->second;
+}
+
 
 CudnnHandler::CudnnHandler() {
     logger=Logger::getInstance(LOG4CPLUS_TEXT("CudnnHandler"));
@@ -389,7 +403,8 @@ CUDNN_ROUTINE_HANDLER(SetConvolutionReorderType){
 CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardFilterAlgorithm){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionBackwardFilterAlgorithm"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>();
+    cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t DyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -417,7 +432,8 @@ CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardFilterAlgorithm){
 CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithmMaxCount){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionForwardAlgorithmMaxCount"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>();
+cudnnHandle_t handle = get_handle(handle_id, logger);
      int count;
 
      cudnnStatus_t cs = cudnnGetConvolutionForwardAlgorithmMaxCount(handle, &count);
@@ -482,7 +498,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionNdForwardOutputDim){
 CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardFilterAlgorithmEx){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionBackwardFilterAlgorithmEx"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>(); //INPUT
+    int handle_id = in->Get<int>();cudnnHandle_t handle = get_handle(handle_id, logger); //INPUT
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>(); //INPUT
     void *x = in->Assign<void>(); //INPUT
     cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>(); //INPUT
@@ -559,7 +575,7 @@ CUDNN_ROUTINE_HANDLER(SetConvolutionGroupCount){
 CUDNN_ROUTINE_HANDLER(FindConvolutionForwardAlgorithmEx){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionForwardAlgorithmEx"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
      void *x = in->GetFromMarshal<void *>();
      cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
@@ -623,7 +639,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionNdDescriptor){
 CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithm){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionForwardAlgorithm"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
   cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -653,7 +669,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithm){
 CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithm_v7){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionForwardAlgorithm_v7"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
   cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -711,7 +727,7 @@ CUDNN_ROUTINE_HANDLER(SetConvolutionMathType){
 CUDNN_ROUTINE_HANDLER(ConvolutionBiasActivationForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBiasActivationForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    void *alpha1 = in->Assign<void>();
    cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    void *x = in->GetFromMarshal<void *>();
@@ -746,7 +762,7 @@ CUDNN_ROUTINE_HANDLER(ConvolutionBiasActivationForward){
 CUDNN_ROUTINE_HANDLER(onvolutionBiasActivationForward){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBiasActivationForward"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   void *alpha1 = in->Assign<void>();
   cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   void *x = in->GetFromMarshal<void *>();
@@ -781,7 +797,7 @@ CUDNN_ROUTINE_HANDLER(onvolutionBiasActivationForward){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithmMaxCount){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardFilterAlgorithmMaxCount"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    int count;
 
    cudnnStatus_t cs = cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle, &count);
@@ -801,7 +817,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithm){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardFilterAlgorithm"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -829,7 +845,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithm){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithm_v7){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardFilterAlgorithm_v7"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -856,7 +872,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithm_v7){
 CUDNN_ROUTINE_HANDLER(FindConvolutionForwardAlgorithm){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionForwardAlgorithm"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
   cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -912,7 +928,7 @@ CUDNN_ROUTINE_HANDLER(DestroyConvolutionDescriptor){
 CUDNN_ROUTINE_HANDLER(ConvolutionBackwardBias){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBackwardBias"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     float alpha = in->Get<float>();
     //const void *alpha = in->Assign<void>();
     const cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -939,7 +955,7 @@ CUDNN_ROUTINE_HANDLER(ConvolutionBackwardBias){
 CUDNN_ROUTINE_HANDLER(ConvolutionForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    //const void *alpha = in->GetFromMarshal<void *>();
 
    float alpha = in->Get<float>();	
@@ -975,7 +991,7 @@ CUDNN_ROUTINE_HANDLER(ConvolutionForward){
 CUDNN_ROUTINE_HANDLER(ConvolutionBackwardFilter){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBackwardFilter"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   //const void *alpha = in->Assign<void>();
   float alpha = in->Get<float>();
   const cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -1036,7 +1052,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolution2dForwardOutputDim){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterWorkspaceSize){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardFilterWorkspaceSize"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   const cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   const cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -1079,7 +1095,7 @@ CUDNN_ROUTINE_HANDLER(CreateConvolutionDescriptor){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardFilterAlgorithm){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardFilterAlgorithm"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    const cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -1132,7 +1148,7 @@ CUDNN_ROUTINE_HANDLER(SetConvolution2dDescriptor){
 CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithm){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionForwardAlgorithm"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    const cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
    const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -1158,7 +1174,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionForwardAlgorithm){
 CUDNN_ROUTINE_HANDLER(GetConvolutionForwardWorkspaceSize){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionForwardWorkspaceSize"));
    
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     const cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     const cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
     const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -1202,6 +1218,7 @@ CUDNN_ROUTINE_HANDLER(GetErrorString){
     return std::make_shared<Result>(CUDNN_STATUS_SUCCESS,out);
 }
 
+/**
 CUDNN_ROUTINE_HANDLER(Create){
 
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Create"));
@@ -1218,21 +1235,72 @@ CUDNN_ROUTINE_HANDLER(Create){
     return std::make_shared<Result>(cs,out);
 
 }
+**/
+CUDNN_ROUTINE_HANDLER(Create) {
+    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Create"));
+    cudnnHandle_t handle;
+    cudnnStatus_t cs = cudnnCreate(&handle);
 
+    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
+
+    if (cs != CUDNN_STATUS_SUCCESS) {
+        LOG4CPLUS_ERROR(logger, "cudnnCreate failed with status: " + std::to_string(cs));
+        return std::make_shared<Result>(cs);
+    }
+
+    int handle_id = next_handle_id++;
+    handle_pool[handle_id] = handle;
+
+    try {
+        out->Add<int>(handle_id);  // return ID to front-end，not handle
+    } catch (const std::exception& e) {
+        LOG4CPLUS_DEBUG(logger, "Buffer::Add failed: " + std::string(e.what()));
+        return std::make_shared<Result>(CUDNN_STATUS_EXECUTION_FAILED);
+    }
+
+    LOG4CPLUS_DEBUG(logger, "cudnnCreate SUCCESS. ID = " + std::to_string(handle_id));
+    return std::make_shared<Result>(cs, out);
+}
+/**
 CUDNN_ROUTINE_HANDLER(Destroy){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Destroy"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnStatus_t cs = cudnnDestroy(handle);
     
     //LOG4CPLUS_DEBUG(logger,"cudnnDestroy Executed");
     //cout << "DEBUG - cudnnDestroy Executed"<<endl;
     return std::make_shared<Result>(cs);
 }
+**/
+CUDNN_ROUTINE_HANDLER(Destroy) {
+    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Destroy"));
+
+    int handle_id = in->Get<int>();
+
+    auto it = handle_pool.find(handle_id);
+    if (it == handle_pool.end()) {
+        LOG4CPLUS_ERROR(logger, "Invalid handle ID: " + std::to_string(handle_id));
+        return std::make_shared<Result>(CUDNN_STATUS_BAD_PARAM);
+    }
+
+    cudnnHandle_t handle = it->second;
+    cudnnStatus_t cs = cudnnDestroy(handle);
+
+    if (cs == CUDNN_STATUS_SUCCESS) {
+        handle_pool.erase(it);
+        LOG4CPLUS_DEBUG(logger, "Destroyed handle ID: " + std::to_string(handle_id));
+    } else {
+        LOG4CPLUS_ERROR(logger, "Failed to destroy handle ID: " + std::to_string(handle_id));
+    }
+
+    return std::make_shared<Result>(cs);
+}
+
 
 CUDNN_ROUTINE_HANDLER(SetStream){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetStream"));
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudaStream_t streamId = (cudaStream_t) in->Get<long long int>();
 
     cudnnStatus_t cs = cudnnSetStream(handle,streamId);
@@ -1244,7 +1312,7 @@ CUDNN_ROUTINE_HANDLER(SetStream){
 
 CUDNN_ROUTINE_HANDLER(GetStream){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetStream"));
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudaStream_t *streamId;
     cudnnStatus_t cs = cudnnGetStream(handle,streamId);
     std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
@@ -1582,7 +1650,7 @@ CUDNN_ROUTINE_HANDLER(DestroyTensorTransformDescriptor){
 CUDNN_ROUTINE_HANDLER(TransformTensor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("TransformTensor"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     void * alpha = in->Assign<void>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     void * x = in->Assign<void>();
@@ -1608,7 +1676,7 @@ CUDNN_ROUTINE_HANDLER(TransformTensor){
 CUDNN_ROUTINE_HANDLER(TransformTensorEx){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("TransformTensorEx"));
    
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnTensorTransformDescriptor_t transDesc = (cudnnTensorTransformDescriptor_t)in->Get<long long int>();
    void *alpha = in->Assign<void>();
    cudnnTensorDescriptor_t srcDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -1629,7 +1697,7 @@ CUDNN_ROUTINE_HANDLER(TransformTensorEx){
 CUDNN_ROUTINE_HANDLER(GetFoldedConvBackwardDataDescriptors){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetFoldedConvBackwardDataDescriptors"));
    
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnFilterDescriptor_t filterDesc;
    cudnnTensorDescriptor_t diffDesc;
    cudnnConvolutionDescriptor_t convDesc;
@@ -1676,7 +1744,7 @@ CUDNN_ROUTINE_HANDLER(GetFoldedConvBackwardDataDescriptors){
 CUDNN_ROUTINE_HANDLER(AddTensor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("AddTensor"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     float alpha = in->Get<float>();
     const cudnnTensorDescriptor_t aDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     const void * A = in->GetFromMarshal<void *>();
@@ -1781,7 +1849,7 @@ CUDNN_ROUTINE_HANDLER(DestroyOpTensorDescriptor){
 CUDNN_ROUTINE_HANDLER(OpTensor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("OpTensor"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnOpTensorDescriptor_t opTensorDesc = (cudnnOpTensorDescriptor_t)in->Get<long long int>();
     const void * alpha1 = in->Assign<void>();
     cudnnTensorDescriptor_t aDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -1896,7 +1964,7 @@ CUDNN_ROUTINE_HANDLER(DestroyReduceTensorDescriptor){
 CUDNN_ROUTINE_HANDLER(GetReductionIndicesSize){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetReductionIndicesSize"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnReduceTensorDescriptor_t reduceTensorDesc = (cudnnReduceTensorDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t aDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t cDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -1920,7 +1988,7 @@ CUDNN_ROUTINE_HANDLER(GetReductionIndicesSize){
 CUDNN_ROUTINE_HANDLER(GetReductionWorkspaceSize){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetReductionWorkspaceSize"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnReduceTensorDescriptor_t reduceTensorDesc = (cudnnReduceTensorDescriptor_t)in->Get<long long int>();
    cudnnTensorDescriptor_t aDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    cudnnTensorDescriptor_t cDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -1943,7 +2011,7 @@ CUDNN_ROUTINE_HANDLER(GetReductionWorkspaceSize){
 CUDNN_ROUTINE_HANDLER(ReduceTensor){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ReduceTensor"));
  
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>(); //INPUT
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger); //INPUT
    cudnnReduceTensorDescriptor_t reduceTensorDesc = (cudnnReduceTensorDescriptor_t)in->Get<long long int>(); //INPUT
    void *indices = in->Assign<void>();  //OUTPUT
    size_t indicesSizeInBytes = in->Get<size_t>(); //INPUT
@@ -1975,7 +2043,7 @@ CUDNN_ROUTINE_HANDLER(ReduceTensor){
 CUDNN_ROUTINE_HANDLER(SetTensor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetTensor"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnTensorDescriptor_t yDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     void * y = in->Assign<void>();
     void * valuePtr = in->Assign<void>();
@@ -1998,7 +2066,7 @@ CUDNN_ROUTINE_HANDLER(SetTensor){
 CUDNN_ROUTINE_HANDLER(ScaleTensor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ScaleTensor"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     const cudnnTensorDescriptor_t yDesc = (const cudnnTensorDescriptor_t)in->Get<long long int>();
     void * y = in->Assign<void>();
     void * alpha = in->Assign<void>();
@@ -2365,7 +2433,7 @@ CUDNN_ROUTINE_HANDLER(DestroyFilterDescriptor){
 CUDNN_ROUTINE_HANDLER(TransformFilter){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("TransformFilter"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>(); //INPUT
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger); //INPUT
    cudnnTensorTransformDescriptor_t transDesc = (cudnnTensorTransformDescriptor_t)in->Get<long long int>(); //INPUT
    void *alpha = in->Assign<void>(); //INPUT
    cudnnFilterDescriptor_t srcDesc = (cudnnFilterDescriptor_t)in->Get<long long int>(); //INPUT
@@ -2392,7 +2460,7 @@ CUDNN_ROUTINE_HANDLER(TransformFilter){
 CUDNN_ROUTINE_HANDLER(ReorderFilterAndBias){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ReorderFilterAndBias"));
    
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnFilterDescriptor_t filterDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
    cudnnReorderType_t reorderType = in->Get<cudnnReorderType_t>();
    void *filterData = in->Assign<void>();
@@ -2414,7 +2482,7 @@ CUDNN_ROUTINE_HANDLER(ReorderFilterAndBias){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithmMaxCount){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetonvolutionBackwardData"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   int count;
 
   cudnnStatus_t cs = cudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle, &count);
@@ -2435,7 +2503,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardDataAlgorithm){
   Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionBackwardDataAlgorithm"));
 
-  cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+  int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
   cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
   cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
   cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -2463,7 +2531,7 @@ CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardDataAlgorithm){
 CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardDataAlgorithmEx){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindConvolutionBackwardDataAlgorithmEx"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>(); //INPUT
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger); //INPUT
    cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>(); //INPUT
    void *w = in->Assign<void>(); //INPUT
    cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>(); //INPUT
@@ -2498,7 +2566,7 @@ CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardDataAlgorithmEx){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithm){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardDataAlgorithm"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
    const cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -2525,7 +2593,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithm){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithm_v7){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardDataAlgorithm_v7"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnFilterDescriptor_t filterDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
    cudnnTensorDescriptor_t diffDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -2554,7 +2622,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataAlgorithm_v7){
 CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataWorkspaceSize){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetConvolutionBackwardDataWorkspaceSize"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
    const cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    const cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
@@ -2578,7 +2646,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionBackwardDataWorkspaceSize){
 CUDNN_ROUTINE_HANDLER(ConvolutionBackwardData){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBackwardData"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    float alpha = in->Get<float>();
    //const void *alpha = in->Assign<void>();
    const cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
@@ -2610,7 +2678,7 @@ CUDNN_ROUTINE_HANDLER(ConvolutionBackwardData){
 CUDNN_ROUTINE_HANDLER(Im2Col){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Im2Col"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    void *x = in->Assign<void>();
    cudnnFilterDescriptor_t wDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
@@ -2635,7 +2703,7 @@ CUDNN_ROUTINE_HANDLER(Im2Col){
 CUDNN_ROUTINE_HANDLER(SoftmaxForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SoftmaxForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnSoftmaxAlgorithm_t algo = in->Get<cudnnSoftmaxAlgorithm_t>();
    cudnnSoftmaxMode_t mode = in->Get<cudnnSoftmaxMode_t>();
    //const void *alpha = in->Assign<void>();
@@ -2665,7 +2733,7 @@ CUDNN_ROUTINE_HANDLER(SoftmaxForward){
 CUDNN_ROUTINE_HANDLER(SoftmaxBackward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SoftmaxBackward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnSoftmaxAlgorithm_t algo = in->Get<cudnnSoftmaxAlgorithm_t>();
    cudnnSoftmaxMode_t mode = in->Get<cudnnSoftmaxMode_t>();
    void *alpha = in->Assign<void>();
@@ -2887,7 +2955,7 @@ CUDNN_ROUTINE_HANDLER(DestroyPoolingDescriptor){
 CUDNN_ROUTINE_HANDLER(PoolingForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("PoolingForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnPoolingDescriptor_t poolingDesc = (cudnnPoolingDescriptor_t)in->Get<long long int>();
    //const void *alpha = in->Assign<void>();
    float alpha = in->Get<float>();
@@ -2914,7 +2982,7 @@ CUDNN_ROUTINE_HANDLER(PoolingForward){
 CUDNN_ROUTINE_HANDLER(PoolingBackward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("PoolingBackward"));   
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    const cudnnPoolingDescriptor_t poolingDesc = (cudnnPoolingDescriptor_t)in->Get<long long int>();
    //const void *alpha = in->Assign<void>();
    float alpha = in->Get<float>();
@@ -3023,7 +3091,7 @@ CUDNN_ROUTINE_HANDLER(DestroyActivationDescriptor){
 CUDNN_ROUTINE_HANDLER(ActivationForward){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ActivationForward"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnActivationDescriptor_t activationDesc = (cudnnActivationDescriptor_t)in->Get<long long int>();
     //const void *alpha = in->Assign<void>();
     float alpha = in->Get<float>();
@@ -3049,7 +3117,7 @@ CUDNN_ROUTINE_HANDLER(ActivationForward){
 CUDNN_ROUTINE_HANDLER(ActivationBackward) {
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ActivationBackward"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnActivationDescriptor_t activationDesc = (cudnnActivationDescriptor_t)in->Get<long long int>();
      //const void *alpha = in->Assign<void>();
      float alpha = in->Get<float>();
@@ -3157,7 +3225,7 @@ CUDNN_ROUTINE_HANDLER(DestroyLRNDescriptor){
 CUDNN_ROUTINE_HANDLER(LRNCrossChannelForward){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("LRNCrossChannelForward"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnLRNDescriptor_t normDesc = (cudnnLRNDescriptor_t)in->Get<long long int>();
     cudnnLRNMode_t lrnMode = in->Get<cudnnLRNMode_t>();
     void *alpha = in->Assign<void>();
@@ -3185,7 +3253,7 @@ CUDNN_ROUTINE_HANDLER(LRNCrossChannelForward){
 CUDNN_ROUTINE_HANDLER(LRNCrossChannelBackward){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("LRNCrossChannelBackward"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnLRNDescriptor_t normDesc = (cudnnLRNDescriptor_t)in->Get<long long int>();
     cudnnLRNMode_t lrnMode = in->Get<cudnnLRNMode_t>();
     void *alpha = in->Assign<void>();
@@ -3218,7 +3286,7 @@ CUDNN_ROUTINE_HANDLER(LRNCrossChannelBackward){
 CUDNN_ROUTINE_HANDLER(DivisiveNormalizationForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DivisiveNormalizationForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnLRNDescriptor_t normDesc = (cudnnLRNDescriptor_t)in->Get<long long int>();
    cudnnDivNormMode_t mode = in->Get<cudnnDivNormMode_t>();
    void *alpha = in->Assign<void>();
@@ -3249,7 +3317,7 @@ CUDNN_ROUTINE_HANDLER(DivisiveNormalizationForward){
 CUDNN_ROUTINE_HANDLER(DivisiveNormalizationBackward){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DivisiveNormalizationBackward"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnLRNDescriptor_t normDesc = (cudnnLRNDescriptor_t)in->Get<long long int>();
     cudnnDivNormMode_t mode = in->Get<cudnnDivNormMode_t>();
     void *alpha = in->Assign<void>();
@@ -3305,7 +3373,7 @@ CUDNN_ROUTINE_HANDLER(DeriveBNTensorDescriptor){
 CUDNN_ROUTINE_HANDLER(GetBatchNormalizationForwardTrainingExWorkspaceSize){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetBatchNormalizationForwardTrainingExWorkspaceSize"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
    cudnnBatchNormOps_t bnOps = in->Get<cudnnBatchNormOps_t>();
    cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -3333,7 +3401,7 @@ CUDNN_ROUTINE_HANDLER(GetBatchNormalizationForwardTrainingExWorkspaceSize){
 CUDNN_ROUTINE_HANDLER(GetBatchNormalizationBackwardExWorkspaceSize){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetBatchNormalizationBackwardExWorkspaceSize"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
     cudnnBatchNormOps_t bnOps = in->Get<cudnnBatchNormOps_t>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -3363,7 +3431,7 @@ CUDNN_ROUTINE_HANDLER(GetBatchNormalizationBackwardExWorkspaceSize){
 CUDNN_ROUTINE_HANDLER(GetBatchNormalizationTrainingExReserveSpaceSize){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetBatchNormalizationTrainingExReserveSpaceSize"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
      cudnnBatchNormOps_t bnOps = in->Get<cudnnBatchNormOps_t>();
      cudnnActivationDescriptor_t activationDesc = (cudnnActivationDescriptor_t)in->Get<long long int>();
@@ -3388,7 +3456,7 @@ CUDNN_ROUTINE_HANDLER(GetBatchNormalizationTrainingExReserveSpaceSize){
 CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardTraining){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("BatchNormalizationForwardTraining"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
     void *alpha = in->Assign<void>();
     void *beta = in->Assign<void>();
@@ -3428,7 +3496,7 @@ CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardTraining){
 CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardTrainingEx){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("BatchNormalizationForwardTrainingEx"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
      cudnnBatchNormOps_t bnOps = in->Get<cudnnBatchNormOps_t>();
      void *alpha = in->Assign<void>();
@@ -3476,7 +3544,7 @@ CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardTrainingEx){
 CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardInference){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("BatchNormalizationForwardInference"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
     void *alpha = in->Assign<void>();
     void *beta = in->Assign<void>();
@@ -3502,7 +3570,7 @@ CUDNN_ROUTINE_HANDLER(BatchNormalizationForwardInference){
 CUDNN_ROUTINE_HANDLER(BatchNormalizationBackward){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("BatchNormalizationBackward"));
      
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
      void *alphaDataDiff = in->Assign<void>();
      void *betaDataDiff  = in->Assign<void>();
@@ -3542,7 +3610,7 @@ CUDNN_ROUTINE_HANDLER(BatchNormalizationBackward){
 CUDNN_ROUTINE_HANDLER(BatchNormalizationBackwardEx){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("BatchNormalizationBackwardEx"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnBatchNormMode_t mode = in->Get<cudnnBatchNormMode_t>();
     cudnnBatchNormOps_t bnOps = in->Get<cudnnBatchNormOps_t>();
     void *alphaDataDiff = in->Assign<void>();
@@ -3653,7 +3721,7 @@ CUDNN_ROUTINE_HANDLER(DestroySpatialTransformerDescriptor){
 CUDNN_ROUTINE_HANDLER(SpatialTfGridGeneratorForward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SpatialTfGridGeneratorForward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnSpatialTransformerDescriptor_t stDesc = (cudnnSpatialTransformerDescriptor_t)in->Get<long long int>();
    void *theta = in->Assign<void>();
    void *grid = in->Assign<void>();
@@ -3678,7 +3746,7 @@ CUDNN_ROUTINE_HANDLER(SpatialTfGridGeneratorForward){
 CUDNN_ROUTINE_HANDLER(SpatialTfGridGeneratorBackward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SpatialTfGridGeneratorBackward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnSpatialTransformerDescriptor_t stDesc = (cudnnSpatialTransformerDescriptor_t)in->Get<long long int>();
    void *dgrid = in->Assign<void>();
    void *dtheta = in->Assign<void>();
@@ -3701,7 +3769,7 @@ CUDNN_ROUTINE_HANDLER(SpatialTfGridGeneratorBackward){
 CUDNN_ROUTINE_HANDLER(SpatialTfSamplerForward){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SpatialTfSamplerForward"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnSpatialTransformerDescriptor_t stDesc = (cudnnSpatialTransformerDescriptor_t)in->Get<long long int>();
     void *alpha = in->Assign<void>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -3729,7 +3797,7 @@ CUDNN_ROUTINE_HANDLER(SpatialTfSamplerForward){
 CUDNN_ROUTINE_HANDLER(SpatialTfSamplerBackward){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SpatialTfSamplerBackward"));
   
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnSpatialTransformerDescriptor_t stDesc = (cudnnSpatialTransformerDescriptor_t)in->Get<long long int>();
      void *alpha = in->Assign<void>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -3796,7 +3864,7 @@ CUDNN_ROUTINE_HANDLER(DestroyDropoutDescriptor){
 CUDNN_ROUTINE_HANDLER(DropoutGetStatesSize){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DropoutGetStatesSize"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     size_t sizeInBytes;
 
     cudnnStatus_t cs = cudnnDropoutGetStatesSize(handle, &sizeInBytes);
@@ -3837,7 +3905,7 @@ CUDNN_ROUTINE_HANDLER(SetDropoutDescriptor){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetDropoutDescriptor"));
 
    cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>(); //INPUT/OUTPUT
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    float dropout = in->Get<float>();
    void *states = in->Assign<void>(); //OUTPUT
    size_t stateSizeInBytes = in->Get<size_t>();
@@ -3863,7 +3931,7 @@ CUDNN_ROUTINE_HANDLER(RestoreDropoutDescriptor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RestoreDropoutDescriptor"));
 
     cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>();
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     float dropout = in->Get<float>();
     void *states = in->Assign<void>();
     size_t stateSizeInBytes = in->Get<size_t>();
@@ -3889,7 +3957,7 @@ CUDNN_ROUTINE_HANDLER(GetDropoutDescriptor){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetDropoutDescriptor"));
 
     cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>();
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     float dropout;
     void *states = in->Assign<void>();
     unsigned long long seed = in->Get<unsigned long long>();
@@ -3914,7 +3982,7 @@ CUDNN_ROUTINE_HANDLER(GetDropoutDescriptor){
 CUDNN_ROUTINE_HANDLER(DropoutForward){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DropoutForward"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>();
      cudnnTensorDescriptor_t xdesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
      void *x = in->Assign<void>();
@@ -3942,7 +4010,7 @@ CUDNN_ROUTINE_HANDLER(DropoutForward){
 CUDNN_ROUTINE_HANDLER(DropoutBackward){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DropoutBackward"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>();
    cudnnTensorDescriptor_t dydesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
    void *dy = in->Assign<void>();
@@ -4031,7 +4099,7 @@ CUDNN_ROUTINE_HANDLER(DestroyRNNDescriptor){
 CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v6){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetRNNDescriptor_v6"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int hiddenSize = in->Get<int>();
     int numLayers  = in->Get<int>();
@@ -4060,7 +4128,7 @@ CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v6){
 CUDNN_ROUTINE_HANDLER(GetRNNDescriptor_v6){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNDescriptor_v6"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int hiddenSize;
     int numLayers;
@@ -4278,7 +4346,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNBiasMode){
 CUDNN_ROUTINE_HANDLER(RNNSetClip){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNSetClip"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      cudnnRNNClipMode_t clipMode = in->Get<cudnnRNNClipMode_t>();
      cudnnNanPropagation_t clipNanOpt = in->Get<cudnnNanPropagation_t>();
@@ -4303,7 +4371,7 @@ CUDNN_ROUTINE_HANDLER(RNNSetClip){
 CUDNN_ROUTINE_HANDLER(RNNGetClip){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNGetClip"));
    
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      cudnnRNNClipMode_t clipMode;
      cudnnNanPropagation_t clipNanOpt;
@@ -4331,7 +4399,7 @@ CUDNN_ROUTINE_HANDLER(RNNGetClip){
 CUDNN_ROUTINE_HANDLER(SetRNNProjectionLayers){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetRNNProjectionLayers"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int recProjSize = in->Get<int>();
     int outProjSize = in->Get<int>();
@@ -4348,7 +4416,7 @@ CUDNN_ROUTINE_HANDLER(SetRNNProjectionLayers){
 CUDNN_ROUTINE_HANDLER(GetRNNProjectionLayers){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNProjectionLayers"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int recProjSize;
     int outProjSize;
@@ -4422,7 +4490,7 @@ CUDNN_ROUTINE_HANDLER(SetPersistentRNNPlan){
 CUDNN_ROUTINE_HANDLER(GetRNNWorkspaceSize){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNWorkspaceSize"));
      
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int seqLength = in->Get<int>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4446,7 +4514,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNWorkspaceSize){
 CUDNN_ROUTINE_HANDLER(GetRNNTrainingReserveSize){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNTrainingReserveSize"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int seqLength = in->Get<int>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4470,7 +4538,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNTrainingReserveSize){
 CUDNN_ROUTINE_HANDLER(GetRNNParamsSize){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNParamsSize"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
     size_t sizeInBytes;
@@ -4494,7 +4562,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNParamsSize){
 CUDNN_ROUTINE_HANDLER(GetRNNLinLayerMatrixParams){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNLinLayerMatrixParams"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int pseudoLayer = in->Get<int>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4523,7 +4591,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNLinLayerMatrixParams){
 CUDNN_ROUTINE_HANDLER(GetRNNLinLayerBiasParams){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNLinLayerBiasParams")); 
      
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int pseudoLayer = in->Get<int>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4552,7 +4620,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNLinLayerBiasParams){
 CUDNN_ROUTINE_HANDLER(RNNForwardInference){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNForwardInference"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int seqLength = in->Get<int>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4592,7 +4660,7 @@ CUDNN_ROUTINE_HANDLER(RNNForwardInference){
 CUDNN_ROUTINE_HANDLER(RNNForwardTraining){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNForwardTraining"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int seqLength = in->Get<int>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4635,7 +4703,7 @@ CUDNN_ROUTINE_HANDLER(RNNForwardTraining){
 CUDNN_ROUTINE_HANDLER(RNNBackwardData){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNBackwardData"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int seqLength = in->Get<int>();
     cudnnTensorDescriptor_t yDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4684,7 +4752,7 @@ CUDNN_ROUTINE_HANDLER(RNNBackwardData){
 CUDNN_ROUTINE_HANDLER(RNNBackwardWeights){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNBackwardWeights"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     int seqLength = in->Get<int>();
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -4854,7 +4922,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNDataDescriptor){
 CUDNN_ROUTINE_HANDLER(RNNForwardTrainingEx){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNForwardTrainingEx"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     cudnnRNNDataDescriptor_t xDesc = (cudnnRNNDataDescriptor_t)in->Get<long long int>();
     void *x = in->Assign<void>();
@@ -4904,7 +4972,7 @@ CUDNN_ROUTINE_HANDLER(RNNForwardTrainingEx){
 CUDNN_ROUTINE_HANDLER(RNNForwardInferenceEx){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNForwardInferenceEx"));
     
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
     cudnnRNNDataDescriptor_t xDesc = (cudnnRNNDataDescriptor_t)in->Get<long long int>();
     void *x = in->Assign<void>();
@@ -4951,7 +5019,7 @@ CUDNN_ROUTINE_HANDLER(RNNForwardInferenceEx){
 CUDNN_ROUTINE_HANDLER(RNNBackwardDataEx){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNBackwardDataEx"));
    
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      cudnnRNNDataDescriptor_t yDesc = (cudnnRNNDataDescriptor_t)in->Get<long long int>();
      void *y = in->Assign<void>();
@@ -5003,7 +5071,7 @@ CUDNN_ROUTINE_HANDLER(RNNBackwardDataEx){
 CUDNN_ROUTINE_HANDLER(RNNBackwardWeightsEx){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RNNBackwardWeightsEx"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      cudnnRNNDataDescriptor_t xDesc = (cudnnRNNDataDescriptor_t)in->Get<long long int>();
      void *x = in->Assign<void>();
@@ -5036,7 +5104,7 @@ CUDNN_ROUTINE_HANDLER(RNNBackwardWeightsEx){
 CUDNN_ROUTINE_HANDLER(SetRNNAlgorithmDescriptor){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetRNNAlgorithmDescriptor"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      cudnnAlgorithmDescriptor_t algoDesc = (cudnnAlgorithmDescriptor_t)in->Get<long long int>();
 
@@ -5058,7 +5126,7 @@ CUDNN_ROUTINE_HANDLER(SetRNNAlgorithmDescriptor){
 CUDNN_ROUTINE_HANDLER(GetRNNForwardInferenceAlgorithmMaxCount){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNForwardInferenceAlgorithmMaxCount"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int count;
 
@@ -5080,7 +5148,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNForwardInferenceAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(FindRNNForwardInferenceAlgorithmEx){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindRNNForwardInferenceAlgorithmEx"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int seqLength = in->Get<int>();
      cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -5126,7 +5194,7 @@ CUDNN_ROUTINE_HANDLER(FindRNNForwardInferenceAlgorithmEx){
 CUDNN_ROUTINE_HANDLER(GetRNNForwardTrainingAlgorithmMaxCount){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNForwardTrainingAlgorithmMaxCount"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int count;
 
@@ -5148,7 +5216,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNForwardTrainingAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(FindRNNForwardTrainingAlgorithmEx){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindRNNForwardTrainingAlgorithmEx"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
    int seqLength = in->Get<int>();
    cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -5197,7 +5265,7 @@ CUDNN_ROUTINE_HANDLER(FindRNNForwardTrainingAlgorithmEx){
 CUDNN_ROUTINE_HANDLER(GetRNNBackwardDataAlgorithmMaxCount){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNBackwardDataAlgorithmMaxCount"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
      int count;
     
@@ -5219,7 +5287,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNBackwardDataAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(FindRNNBackwardDataAlgorithmEx){
       Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindRNNBackwardDataAlgorithmEx"));
 
-       cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+       int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
        cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
        int seqLength = in->Get<int>();
        cudnnTensorDescriptor_t yDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -5275,7 +5343,7 @@ CUDNN_ROUTINE_HANDLER(FindRNNBackwardDataAlgorithmEx){
 CUDNN_ROUTINE_HANDLER(GetRNNBackwardWeightsAlgorithmMaxCount){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetRNNBackwardWeightsAlgorithmMaxCount"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
    int count;
 
@@ -5296,7 +5364,7 @@ CUDNN_ROUTINE_HANDLER(GetRNNBackwardWeightsAlgorithmMaxCount){
 CUDNN_ROUTINE_HANDLER(FindRNNBackwardWeightsAlgorithmEx){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FindRNNBackwardWeightsAlgorithmEx"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
    int seqLength = in->Get<int>();
    cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
@@ -5560,7 +5628,7 @@ CUDNN_ROUTINE_HANDLER(GetAttnDescriptor){
 CUDNN_ROUTINE_HANDLER(GetMultiHeadAttnBuffers){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetMultiHeadAttnBuffers"));
      
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnAttnDescriptor_t attnDesc = (cudnnAttnDescriptor_t)in->Get<long long int>();
      size_t weightSizeInBytes;
      size_t workSpaceSizeInBytes;
@@ -5586,7 +5654,7 @@ CUDNN_ROUTINE_HANDLER(GetMultiHeadAttnBuffers){
 CUDNN_ROUTINE_HANDLER(GetMultiHeadAttnWeights){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetMultiHeadAttnWeights"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnAttnDescriptor_t attnDesc = (cudnnAttnDescriptor_t)in->Get<long long int>();
     cudnnMultiHeadAttnWeightKind_t wKind = (cudnnMultiHeadAttnWeightKind_t)in->Get<long long int>();
     size_t weightSizeInBytes = in->Get<size_t>();
@@ -5613,7 +5681,7 @@ CUDNN_ROUTINE_HANDLER(GetMultiHeadAttnWeights){
 CUDNN_ROUTINE_HANDLER(MultiHeadAttnForward){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("MultiHeadAttnForward"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnAttnDescriptor_t attnDesc = (cudnnAttnDescriptor_t)in->Get<long long int>();
      int currIdx = in->Get<int>();
      int *loWinIdx = in->Assign<int>();
@@ -5656,7 +5724,7 @@ CUDNN_ROUTINE_HANDLER(MultiHeadAttnForward){
 CUDNN_ROUTINE_HANDLER(MultiHeadAttnBackwardData){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("MultiHeadAttnBackwardData"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnAttnDescriptor_t attnDesc = (cudnnAttnDescriptor_t)in->Get<long long int>();
     int *loWinIdx = in->Assign<int>();
     int *hiWinIdx = in->Assign<int>();
@@ -5702,7 +5770,7 @@ CUDNN_ROUTINE_HANDLER(MultiHeadAttnBackwardData){
 CUDNN_ROUTINE_HANDLER(MultiHeadAttnBackwardWeights){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("MultiHeadAttnBackwardWeights"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnAttnDescriptor_t attnDesc = (cudnnAttnDescriptor_t)in->Get<long long int>();
     cudnnWgradMode_t addGrad = in->Get<cudnnWgradMode_t>();
     cudnnSeqDataDescriptor_t qDesc = (cudnnSeqDataDescriptor_t)in->Get<long long int>();
@@ -5865,7 +5933,7 @@ CUDNN_ROUTINE_HANDLER(DestroyCTCLossDescriptor){
 CUDNN_ROUTINE_HANDLER(CTCLoss){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("CTCLoss"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnTensorDescriptor_t probsDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
      void *probs = in->Assign<void>();
      int labels = in->Get<int>();
@@ -5898,7 +5966,7 @@ CUDNN_ROUTINE_HANDLER(CTCLoss){
 CUDNN_ROUTINE_HANDLER(GetCTCLossWorkspaceSize){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetCTCLossWorkspaceSize"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnTensorDescriptor_t probsDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
      cudnnTensorDescriptor_t gradientsDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
      int labels = in->Get<int>();
@@ -6087,7 +6155,7 @@ CUDNN_ROUTINE_HANDLER(DestroyAlgorithmPerformance){
 CUDNN_ROUTINE_HANDLER(GetAlgorithmSpaceSize){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetAlgorithmSpaceSize"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnAlgorithmDescriptor_t algoDesc = (cudnnAlgorithmDescriptor_t)in->Get<long long int>();
      size_t algoSpaceSizeInBytes;
 
@@ -6109,7 +6177,7 @@ CUDNN_ROUTINE_HANDLER(GetAlgorithmSpaceSize){
 CUDNN_ROUTINE_HANDLER(SaveAlgorithm){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SaveAlgorithm"));  
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnAlgorithmDescriptor_t algoDesc = (cudnnAlgorithmDescriptor_t)in->Get<long long int>();
     void *algoSpace = in->Assign<void>();
     size_t algoSpaceSizeInBytes = in->Get<size_t>();
@@ -6124,7 +6192,7 @@ CUDNN_ROUTINE_HANDLER(SaveAlgorithm){
 CUDNN_ROUTINE_HANDLER(RestoreAlgorithm){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("RestoreAlgorithm"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     void *algoSpace = in->Assign<void>();
     size_t algoSpaceSizeInBytes = in->Get<size_t>();
     cudnnAlgorithmDescriptor_t algoDesc = (cudnnAlgorithmDescriptor_t)in->Get<long long int>();
@@ -6333,7 +6401,7 @@ CUDNN_ROUTINE_HANDLER(DestroyFusedOpsPlan){
 CUDNN_ROUTINE_HANDLER(MakeFusedOpsPlan){
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("MakeFusedOpsPlan"));
 
-     cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+     int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
      cudnnFusedOpsPlan_t plan = in->Get<cudnnFusedOpsPlan_t>();
      cudnnFusedOpsConstParamPack_t constPack = in->Get<cudnnFusedOpsConstParamPack_t>();
      size_t workspaceSizeInBytes;
@@ -6356,7 +6424,7 @@ CUDNN_ROUTINE_HANDLER(MakeFusedOpsPlan){
 CUDNN_ROUTINE_HANDLER(FusedOpsExecute){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("FusedOpsExecute"));
 
-    cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+    int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
     cudnnFusedOpsPlan_t plan = in->Get<cudnnFusedOpsPlan_t>();
     cudnnFusedOpsVariantParamPack_t varPack = in->Get<cudnnFusedOpsVariantParamPack_t>();
 
@@ -6370,7 +6438,7 @@ CUDNN_ROUTINE_HANDLER(FusedOpsExecute){
 CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v6){
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetRNNDescriptor_v6"));
 
-   cudnnHandle_t handle = (cudnnHandle_t)in->Get<long long int>();
+   int handle_id = in->Get<int>(); cudnnHandle_t handle = get_handle(handle_id, logger);
    cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>(); //INPUT/OUTPUT
    int hiddenSize = in->Get<int>();
    int numLayers = in->Get<int>();
