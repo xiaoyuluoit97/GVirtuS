@@ -5417,8 +5417,8 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetCallback(unsigned mask, void *udata
 
     CudnnFrontend::AddVariableForArguments<unsigned>(mask);
     CudnnFrontend::AddHostPointerForArguments(udata);
-    void* fptr = reinterpret_cast<void*>(callback);  // 或函数指针等
-    CudnnFrontend::AddVariableForArguments(fptr);    //
+    CudnnFrontend::AddVariableForArguments(reinterpret_cast<void*>(callback));
+
 
     //CudnnFrontend::AddVariableForArguments<cudnnCallback_t>(fptr);
 

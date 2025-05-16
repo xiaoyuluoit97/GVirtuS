@@ -91,6 +91,16 @@ class Buffer {
     mLength += size;
     mBackOffset = mLength;
   }
+  void Add(void* ptr) {
+    long long val = reinterpret_cast<long long>(ptr);
+    Add(&val, 1);  // 调用模板 Add<long long>()
+  }
+
+  // ✅ 重载：支持 const void*
+  void Add(const void* ptr) {
+    long long val = reinterpret_cast<long long>(ptr);
+    Add(&val, 1);  // 调用模板 Add<long long>()
+  }
 
   template <class T>
   void AddConst(const T item) {
