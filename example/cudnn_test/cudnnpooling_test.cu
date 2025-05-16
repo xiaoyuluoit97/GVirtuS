@@ -52,7 +52,7 @@ int main() {
            13,14,15,16
         };
         float h_output[4] = {0};
-
+        int N=16;
         float *d_input, *d_output;
         checkCUDA(cudaMalloc(&d_input, sizeof(h_input)));
         checkCUDA(cudaMalloc(&d_output, sizeof(h_output)));
