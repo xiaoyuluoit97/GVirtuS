@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libosmesa-dev \
     git \
     curl \
-    cmake \
     autotools-dev \
     automake \
     libtool \
