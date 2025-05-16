@@ -2,6 +2,18 @@
 #include <cudnn.h>
 #include <cuda_runtime.h>
 #include "cudnn_utils.h"
+template<typename T>
+void memcpyChunked(T* d_dst, const T* h_src, size_t count)
+{
+    const size_t CHUNK = 1 << 18;          // 256 Ki 元素 ≈ 1 MiB（float）
+    for (size_t off = 0; off < count; off += CHUNK) {
+        size_t cur = std::min(CHUNK, count - off);
+        CHECK_CUDA(cudaMemcpy(d_dst + off,
+                              h_src + off,
+                              cur * sizeof(T),
+                              cudaMemcpyHostToDevice));
+    }
+}
 
 int main() {
     try {
@@ -45,7 +57,10 @@ int main() {
         checkCUDA(cudaMalloc(&d_input, sizeof(h_input)));
         checkCUDA(cudaMalloc(&d_output, sizeof(h_output)));
 
-        checkCUDA(cudaMemcpy(d_input, h_input, N * sizeof(float), cudaMemcpyHostToDevice));
+        memcpyChunked<float>(d_input, h_input, N);
+
+        // 如果你想继续沿用宏来捕获最后一次错误（可选）
+        CHECK_CUDA(cudaDeviceSynchronize());
 
         float alpha = 1.0f, beta = 0.0f;
         checkCUDNN(cudnnPoolingForward(
