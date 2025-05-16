@@ -9,15 +9,16 @@
 ## **Progress Updates**  
 
 ### **Resolved Issues**  
-1. cudnnCreate solved.
-2. Environment Migration Fixes:
+1. cudnnCreate,cudnnDestroy solved.
+2. 
+3. Environment Migration Fixes:
    - The original repository’s Dockerfile had an incorrect download URL for log4cplus.  
    - Added missing dependencies:  
      - rdma-core
      - librdmacm-dev 
      - libibverbs-dev
 
-3. **RDMA Protocol Configuration:**  
+4. **RDMA Protocol Configuration:**  
    - The default RDMA protocol failed to function.  
    - Workaround: Switched to TCP/IP, restoring normal connectivity.  
 
@@ -32,6 +33,10 @@
 | **cuBLAS**   | Basic functionality confirmed.                                            |
 | **cuFFT**    | Backend communication error: `Request unknown routine`.               |
 | **cuRAND**   | Partial support: Some functions undefined.                            |
+
+## **Test file description**
+cudnncreate_test.cu: cudnnCreate,cudnnDestroy
+cudnnpooling_test.cu:cudnnCreatePoolingDescriptor,cudnnCreateTensorDescriptor,cudnnSetTensor4dDescriptor,cudnnPoolingForward,cudnnDestroyTensorDescriptor,cudnnDestroyPoolingDescriptor
 
 ## **Collaboration & Alignment**  
 
@@ -54,7 +59,7 @@
 |-------------|----------------|----------------|--------------|  
 | cudaRT      |                |see below|              |
 | cuBLAS      |see below|             |              |  
-| cuDNN       |          |cudnnCreate|              |  
+| cuDNN       |          |see below|              |  
 | cuFFT       |cufftplan1d,cufft2d,cufftPlanMany |                |              |  
 | cuRAND      |curandDestroyGenerator|curandCreateGenerator|              |  
 
@@ -75,6 +80,20 @@ cudaEventCreate
 cudaEventElapsedTime
 cudaEventRecord
 cudaEventSynchronize
+
+**cuDNN functional**
+cudnnCreate
+cudnnDestroy
+cudnnCreatePoolingDescriptor
+cudnnCreateTensorDescriptor
+cudnnSetTensor4dDescriptor
+
+**cuDNN unsupported**
+cudnnPoolingForward
+
+**cuDNN untested**
+cudnnDestroyTensorDescriptor
+cudnnDestroyPoolingDescriptor
 
 **cuBLAS functional**
 cublasCreate_v2
