@@ -5417,7 +5417,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetCallback(unsigned mask, void *udata
 
     CudnnFrontend::AddVariableForArguments<unsigned>(mask);
     CudnnFrontend::AddHostPointerForArguments(udata);
-    CudnnFrontend::AddVariableForArguments(reinterpret_cast<void*>(callback));
+    CudnnFrontend::AddVariableForArguments(reinterpret_cast<void*>(fptr));
 
 
     //CudnnFrontend::AddVariableForArguments<cudnnCallback_t>(fptr);

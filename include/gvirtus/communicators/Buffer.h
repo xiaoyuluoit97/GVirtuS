@@ -236,6 +236,32 @@ class Buffer {
         mOffset += sizeof(T) * n;
         return result;
     }
+  // AssignAll<void>
+  template <>
+  inline void* Buffer::AssignAll<void>() {
+    size_t size = Get<size_t>();
+    if (size == 0) return nullptr;
+
+    if (mOffset + size > mLength)
+      throw std::string("Buffer::AssignAll<void>(): Out of range");
+
+    void* result = mpBuffer + mOffset;
+    mOffset += size;
+    return result;
+  }
+
+  // Assign<void>
+  template <>
+  inline void* Buffer::Assign<void>(size_t n) {
+    if (Get<size_t>() == 0) return nullptr;
+
+    if (mOffset + n > mLength)
+      throw std::string("Buffer::Assign<void>(n): Out of range");
+
+    void* result = mpBuffer + mOffset;
+    mOffset += n;
+    return result;
+  }
 
   char *AssignString() {
     size_t size = Get<size_t>();
