@@ -8,7 +8,7 @@ void memcpyChunked(T* d_dst, const T* h_src, size_t count)
     const size_t CHUNK = 1 << 18;          // 256 Ki 元素 ≈ 1 MiB（float）
     for (size_t off = 0; off < count; off += CHUNK) {
         size_t cur = std::min(CHUNK, count - off);
-        CHECK_CUDA(cudaMemcpy(d_dst + off,
+        checkCUDA(cudaMemcpy(d_dst + off,
                               h_src + off,
                               cur * sizeof(T),
                               cudaMemcpyHostToDevice));
@@ -60,7 +60,7 @@ int main() {
         memcpyChunked<float>(d_input, h_input, N);
 
         // 如果你想继续沿用宏来捕获最后一次错误（可选）
-        CHECK_CUDA(cudaDeviceSynchronize());
+        checkCUDA(cudaDeviceSynchronize());
 
         float alpha = 1.0f, beta = 0.0f;
         checkCUDNN(cudnnPoolingForward(
