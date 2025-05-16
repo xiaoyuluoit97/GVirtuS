@@ -1675,7 +1675,8 @@ CUDNN_ROUTINE_HANDLER(TransformTensor){
 
     std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
     try{
-        out->Add<void>(y);
+        //out->Add<void>(y);
+        out->Add(reinterpret_cast<void*>(y));
     } catch(string e){
         LOG4CPLUS_DEBUG(logger, e);
         return make_shared<Result>(cs);
