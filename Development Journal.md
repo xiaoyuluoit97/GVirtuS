@@ -9,8 +9,12 @@
 ## **Progress Updates**  
 
 ### **Resolved Issues**  
-1. cudnnCreate,cudnnDestroy solved.
-2. limitation:
+1. cudnnCreate,cudnnDestroy solved: CUDA 11.x, cudnnHandle_t is an opaque handle and can no longer be passed as a raw pointer between frontend and backend
+2. limitation:Front-end crashes without releasing resources ｜Adding a session ID? Need help with network communications
+Memory leaks (cudnnDestroy not called) | Tricky … Maybe some resource timeout cleanup mechanism?
+ Multi-device contextual confusion  | Extended  the handle_id structure to include the device_id?
+handle_pool concurrency conflicts | std::mutex or some other concurrent-lib?
+
 3. Environment Migration Fixes:
    - The original repository’s Dockerfile had an incorrect download URL for log4cplus.  
    - Added missing dependencies:  
