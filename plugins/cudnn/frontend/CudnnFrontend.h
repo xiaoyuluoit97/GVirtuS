@@ -90,9 +90,21 @@ public:
      *
      * @param ptr the pointer to add as a parameter.
      * @param n the length of the array, if ptr is an array.
-     */
+
     template <class T>static inline void AddHostPointerForArguments(T *ptr, size_t n = 1) {
         Frontend::GetFrontend()->GetInputBuffer()->Add(ptr, n);
+    }
+    */
+    template <typename T>
+    static inline void AddHostPointerForArguments(T* ptr, size_t n = 1) {
+        static_assert(!std::is_void<T>::value,
+                  "T must not be void. Use the const void* overload instead.");
+        Frontend::GetFrontend()->GetInputBuffer()->Add(ptr, n);
+    }
+    // reload
+    static inline void AddHostPointerForArguments(const void* ptr, size_t n) {
+        auto byte_ptr = reinterpret_cast<const uint8_t*>(ptr);
+        Frontend::GetFrontend()->GetInputBuffer()->Add(byte_ptr, n);
     }
 
     /**

@@ -47,6 +47,19 @@ extern "C" int HandlerInit() {
     return 0;
 }
 
+
+template<typename PtrType = void>
+PtrType* ReadPtr(std::shared_ptr<Buffer> buf) {
+    auto raw = buf->Assign<long long int>();
+    return reinterpret_cast<PtrType*>(*raw);
+}
+
+template<typename PtrType = void>
+void WritePtr(std::shared_ptr<Buffer> buf, PtrType* p) {
+    long long int val = reinterpret_cast<long long int>(p);
+    buf->Add<long long int>(&val);
+}
+
 cudnnHandle_t get_handle(int id, Logger& logger) {
     auto it = handle_pool.find(id);
     if (it == handle_pool.end()) {
@@ -500,22 +513,22 @@ CUDNN_ROUTINE_HANDLER(FindConvolutionBackwardFilterAlgorithmEx){
     
     int handle_id = in->Get<int>();cudnnHandle_t handle = get_handle(handle_id, logger); //INPUT
     cudnnTensorDescriptor_t xDesc = (cudnnTensorDescriptor_t)in->Get<long long int>(); //INPUT
-    void *x = in->Assign<void>(); //INPUT
+    void *x  = ReadPtr<>(in); //INPUT
     cudnnTensorDescriptor_t dyDesc = (cudnnTensorDescriptor_t)in->Get<long long int>(); //INPUT
-    void *y = in->Assign<void>(); //INPUT
+    void *y  = ReadPtr<>(in);; //INPUT
     cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>(); //INPUT
     cudnnFilterDescriptor_t dwDesc = (cudnnFilterDescriptor_t)in->Get<long long int>(); //INPUT
-    void *dw = in->Assign<void>(); //INPUT/OUTPUT
+    void *dw = ReadPtr<>(in); //INPUT/OUTPUT
     int requestedAlgoCount = in->Get<int>(); //INPUT
     int *returnedAlgoCount; //OUTPUT
     cudnnConvolutionBwdFilterAlgoPerf_t perfResults; //OUTPUT
-    void *workSpace = in->Assign<void>(); //INPUT
+    void *workSpace = ReadPtr<>(in); //INPUT
     size_t workSpaceSizeInBytes = in->Get<size_t>(); //INPUT
    
     cudnnStatus_t cs = cudnnFindConvolutionBackwardFilterAlgorithmEx(handle, xDesc, x, dyDesc, y, convDesc, dwDesc, dw, requestedAlgoCount, returnedAlgoCount, &perfResults, workSpace, workSpaceSizeInBytes);
     std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
     try{
-        out->Add<void>(dw);
+        WritePtr(out, dw);
         out->Add<int>(returnedAlgoCount);
         out->Add<cudnnConvolutionBwdFilterAlgoPerf_t>(perfResults); 
     } catch(string e){

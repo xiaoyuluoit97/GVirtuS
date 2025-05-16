@@ -354,7 +354,8 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnTransformTensor( cudnnHandle_t        
     CudnnFrontend::Prepare();
 
     CudnnFrontend::AddVariableForArguments<long long int>((long long int)handle);
-    CudnnFrontend::AddHostPointerForArguments(alpha);
+    //CudnnFrontend::AddHostPointerForArguments(alpha);
+    CudnnFrontend::AddHostPointerForArguments(alpha, sizeof(float)); // or sizeof(double)
     CudnnFrontend::AddVariableForArguments<long long int>((long long int)xDesc);
     CudnnFrontend::AddHostPointerForArguments(x);
     CudnnFrontend::AddHostPointerForArguments(beta);
