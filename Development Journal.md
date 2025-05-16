@@ -41,6 +41,8 @@
 
 **cudnnconvolution_test.cu:** cudnnCreateConvolutionDescriptor,cudnnCreateFilterDescriptor,cudnnSetFilter4dDescriptor,cudnnSetConvolution2dDescriptor,cudnnGetConvolutionBackwardDataWorkspaceSize,cudnnConvolutionBackwardData,cudnnDestroyFilterDescriptor,cudnnDestroyConvolutionDescriptor
 
+**cudnnlrn_test.cu:** cudnnCreateLRNDescriptor,cudnnSetLRNDescriptor,cudnnLRNCrossChannelForward,cudnnDestroyLRNDescriptor
+
 ## **Collaboration & Alignment**  
 
 ### Darshan (CUDA 11.4 → 12.2 Compatibility)
@@ -62,7 +64,7 @@
 |-------------|----------------|----------------|--------------|  
 | cudaRT      |                |see below|              |
 | cuBLAS      |see below|             |              |  
-| cuDNN       |          |see below|              |  
+| cuDNN       |see below|see below|see below|  
 | cuFFT       |cufftplan1d,cufft2d,cufftPlanMany |                |              |  
 | cuRAND      |curandDestroyGenerator|curandCreateGenerator|              |  
 
@@ -94,10 +96,13 @@ cudnnCreateFilterDescriptor
 cudnnSetTensor4dDescriptor
 cudnnSetFilter4dDescriptor
 cudnnSetConvolution2dDescriptor
+cudnnCreateLRNDescriptor
+cudnnSetLRNDescriptor
 
 **cuDNN unsupported**
 cudnnPoolingForward
 cudnnGetConvolutionBackwardDataWorkspaceSize
+cudnnLRNCrossChannelForward
 
 **cuDNN untested**
 cudnnDestroyTensorDescriptor
@@ -105,6 +110,7 @@ cudnnDestroyPoolingDescriptor
 cudnnConvolutionBackwardData
 cudnnDestroyFilterDescriptor
 cudnnDestroyConvolutionDescriptor
+cudnnDestroyLRNDescriptor
 
 **cuBLAS functional**
 cublasCreate_v2
