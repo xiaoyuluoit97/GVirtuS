@@ -67,10 +67,30 @@ public:
      * request.
      *
      * @param var the variable to add as a parameter.
-     */
+
     template <class T> static inline void AddVariableForArguments(T var) {
         Frontend::GetFrontend()->GetInputBuffer()->Add(var);
     }
+*/
+//
+template <typename T>
+static inline typename std::enable_if<
+    !std::is_void<T>::value && !std::is_function<T>::value>::type
+AddVariableForArguments(T val) {
+    Frontend::GetFrontend()->GetInputBuffer()->Add(&val, 1);
+}
+
+//
+static inline void AddVariableForArguments(void* ptr) {
+    long long int val = reinterpret_cast<long long int>(ptr);
+    Frontend::GetFrontend()->GetInputBuffer()->Add(&val, 1);
+}
+
+//
+static inline void AddVariableForArguments(const void* ptr) {
+    long long int val = reinterpret_cast<long long int>(ptr);
+    Frontend::GetFrontend()->GetInputBuffer()->Add(&val, 1);
+}
 
     /**
      * Adds a string (array of char(s)) as an input parameter for the next
