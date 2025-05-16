@@ -1,6 +1,6 @@
 # GVirtuS Development Journal  
 
-**Date:** previous - 15-05-2025  
+**Date:** previous - 16-05-2025  
 
 ## **Key Tasks**  
 - **Primary Objective:** Upgrade critical functions in cuDNN.  
@@ -10,7 +10,7 @@
 
 ### **Resolved Issues**  
 1. cudnnCreate,cudnnDestroy solved.
-2. 
+2. limitation:
 3. Environment Migration Fixes:
    - The original repository’s Dockerfile had an incorrect download URL for log4cplus.  
    - Added missing dependencies:  
@@ -35,8 +35,11 @@
 | **cuRAND**   | Partial support: Some functions undefined.                            |
 
 ## **Test file description**
-cudnncreate_test.cu: cudnnCreate,cudnnDestroy
-cudnnpooling_test.cu:cudnnCreatePoolingDescriptor,cudnnCreateTensorDescriptor,cudnnSetTensor4dDescriptor,cudnnPoolingForward,cudnnDestroyTensorDescriptor,cudnnDestroyPoolingDescriptor
+**cudnncreate_test.cu:** cudnnCreate,cudnnDestroy
+
+**cudnnpooling_test.cu:** cudnnCreatePoolingDescriptor,cudnnCreateTensorDescriptor,cudnnSetTensor4dDescriptor,cudnnPoolingForward,cudnnDestroyTensorDescriptor,cudnnDestroyPoolingDescriptor
+
+**cudnnconvolution_test.cu:** cudnnCreateConvolutionDescriptor,cudnnCreateFilterDescriptor,cudnnSetFilter4dDescriptor,cudnnSetConvolution2dDescriptor,cudnnGetConvolutionBackwardDataWorkspaceSize,cudnnConvolutionBackwardData,cudnnDestroyFilterDescriptor,cudnnDestroyConvolutionDescriptor
 
 ## **Collaboration & Alignment**  
 
@@ -86,14 +89,22 @@ cudnnCreate
 cudnnDestroy
 cudnnCreatePoolingDescriptor
 cudnnCreateTensorDescriptor
+cudnnCreateConvolutionDescriptor
+cudnnCreateFilterDescriptor
 cudnnSetTensor4dDescriptor
+cudnnSetFilter4dDescriptor
+cudnnSetConvolution2dDescriptor
 
 **cuDNN unsupported**
 cudnnPoolingForward
+cudnnGetConvolutionBackwardDataWorkspaceSize
 
 **cuDNN untested**
 cudnnDestroyTensorDescriptor
 cudnnDestroyPoolingDescriptor
+cudnnConvolutionBackwardData
+cudnnDestroyFilterDescriptor
+cudnnDestroyConvolutionDescriptor
 
 **cuBLAS functional**
 cublasCreate_v2
