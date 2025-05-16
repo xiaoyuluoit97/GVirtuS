@@ -9,24 +9,25 @@
 
 ### **Resolved Issues**  
 1. cudnnCreate,cudnnDestroy solved: CUDA 11.x, cudnnHandle_t is an opaque handle and can no longer be passed as a raw pointer between frontend and backend
-2. limitation:Front-end crashes without releasing resources ｜Adding a session ID? Need help with network communications
-Memory leaks (cudnnDestroy not called) | Tricky … Maybe some resource timeout cleanup mechanism?
- Multi-device contextual confusion  | Extended  the handle_id structure to include the device_id?
-handle_pool concurrency conflicts | std::mutex or some other concurrent-lib?
 
-3. Environment Migration Fixes:
+2. Environment Migration Fixes:
    - The original repository’s Dockerfile had an incorrect download URL for log4cplus.  
    - Added missing dependencies:  
      - rdma-core
      - librdmacm-dev 
      - libibverbs-dev
 
-4. **RDMA Protocol Configuration:**  
+3. **RDMA Protocol Configuration:**  
    - The default RDMA protocol failed to function.  
    - Workaround: Switched to TCP/IP, restoring normal connectivity.  
 
 ### **Unresolved Issues**  
-- The default RDMA protocol in ecn-aau/GVirtuS.git remains non-functional (requires further investigation) in the current Dockerfile.  
+- The default RDMA protocol in ecn-aau/GVirtuS.git remains non-functional (requires further investigation) in the current Dockerfile.
+- limitation:Front-end crashes without releasing resources ｜Adding a session ID? Need help with network communications
+Memory leaks (cudnnDestroy not called) | Tricky … Maybe some resource timeout cleanup mechanism?
+ Multi-device contextual confusion  | Extended  the handle_id structure to include the device_id?
+handle_pool concurrency conflicts | std::mutex or some other concurrent-lib?
+- cudnnPoolingForward: Memory overflow problem when transferring during allocate memory
 
 ## **CUDA Library Preliminary Testing Results**  
 
