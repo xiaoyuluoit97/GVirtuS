@@ -45,7 +45,7 @@ int main() {
         checkCUDA(cudaMalloc(&d_input, sizeof(h_input)));
         checkCUDA(cudaMalloc(&d_output, sizeof(h_output)));
 
-        checkCUDA(cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice));
+        checkCUDA(cudaMemcpy(d_input, h_input, N * sizeof(float), cudaMemcpyHostToDevice));
 
         float alpha = 1.0f, beta = 0.0f;
         checkCUDNN(cudnnPoolingForward(
