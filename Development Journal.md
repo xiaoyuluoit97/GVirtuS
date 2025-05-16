@@ -4,7 +4,6 @@
 
 ## **Key Tasks**  
 - **Primary Objective:** Upgrade critical functions in cuDNN.  
-- **Major Challenge:** Starting from CUDA 11.x, cudnnHandle_t became an opaque handle, preventing its direct passage as a raw pointer.  
 
 ## **Progress Updates**  
 
@@ -57,10 +56,9 @@ handle_pool concurrency conflicts | std::mutex or some other concurrent-lib?
   - CNN-related functions  
 
 ### Theo (CUDA 11.8 Testing) 
-- Tested Libraries: `cuDNN`, `cudaRT`, `cuFFT`, `cuRAND`, `cuBLAS`  
-- Findings: 
-  - None are fully supported in CUDA 11.8.  
-  - Critical Issue: Segmentation faults observed.  
+- None of `cuDNN`, `cudaRT`, `cuFFT`, `cuRAND`, `cuBLAS` currently are fully supported in CUDA 11.8.  
+- Critical Issue: Segmentation faults observed.
+- fixed a bug in the frontend destructor which caused seg fault in curand [https://github.com/tgasla/GVirtuS/tree/main]
 
 ## **Functionality Summary Table**  (continuously updated)
 
@@ -104,9 +102,9 @@ cudnnCreateLRNDescriptor
 cudnnSetLRNDescriptor
 
 **cuDNN unsupported**
-cudnnPoolingForward
+cudnnPoolingForward: Execution exception: Buffer::Read(*c, n): Can't reallocate memory.
 cudnnGetConvolutionBackwardDataWorkspaceSize
-cudnnLRNCrossChannelForward
+cudnnLRNCrossChannelForward: Execution exception: Buffer::Read(*c, n): Can't reallocate memory.
 
 **cuDNN untested**
 cudnnDestroyTensorDescriptor
