@@ -357,8 +357,8 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnTransformTensor( cudnnHandle_t        
     //CudnnFrontend::AddHostPointerForArguments(alpha);
     CudnnFrontend::AddHostPointerForArguments(alpha, sizeof(float)); // or sizeof(double)
     CudnnFrontend::AddVariableForArguments<long long int>((long long int)xDesc);
-    CudnnFrontend::AddHostPointerForArguments(x);
-    CudnnFrontend::AddHostPointerForArguments(beta);
+    CudnnFrontend::AddHostPointerForArguments(x, sizeof(float));
+    CudnnFrontend::AddHostPointerForArguments(beta, sizeof(float));
     CudnnFrontend::AddVariableForArguments<long long int>((long long int)yDesc);
 
     CudnnFrontend::Execute("cudnnTransformTensor");
@@ -5417,7 +5417,8 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetCallback(unsigned mask, void *udata
 
     CudnnFrontend::AddVariableForArguments<unsigned>(mask);
     CudnnFrontend::AddHostPointerForArguments(udata);
-    CudnnFrontend::AddVariableForArguments<cudnnCallback_t>(fptr);
+    AddVariableForArguments(reinterpret_cast<void*>(fptr));
+    //CudnnFrontend::AddVariableForArguments<cudnnCallback_t>(fptr);
 
     CudnnFrontend::Execute("cudnnSetCallback");
 
