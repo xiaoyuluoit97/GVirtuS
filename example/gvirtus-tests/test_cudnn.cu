@@ -1,16 +1,20 @@
 #include <gtest/gtest.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+#include "cudnn_utils.h"
 
-#define CUDA_CHECK(err) ASSERT_EQ((err), cudaSuccess)
-#define CUDNN_CHECK(err) ASSERT_EQ((err), CUDNN_STATUS_SUCCESS)
+//#define CUDA_CHECK(err) ASSERT_EQ((err), cudaSuccess)
+//#define CUDNN_CHECK(err) ASSERT_EQ((err), CUDNN_STATUS_SUCCESS)
+#define CUDA_CHECK(err) checkCUDA(err)
+#define CUDNN_CHECK(err) checkCUDNN(err)
+
 
 TEST(cuDNN, CreateDestroy) {
     cudnnHandle_t handle;
     CUDNN_CHECK(cudnnCreate(&handle));
     CUDNN_CHECK(cudnnDestroy(handle));
 }
-/*
+
 TEST(cuDNN, SetStreamDestroy) {
     cudnnHandle_t handle;
     cudaStream_t stream;
@@ -20,7 +24,7 @@ TEST(cuDNN, SetStreamDestroy) {
     CUDA_CHECK(cudaStreamDestroy(stream));
     CUDNN_CHECK(cudnnDestroy(handle));
 }
-*/
+
 TEST(cuDNN, AddTensor) {
     cudnnHandle_t handle;
     CUDNN_CHECK(cudnnCreate(&handle));
