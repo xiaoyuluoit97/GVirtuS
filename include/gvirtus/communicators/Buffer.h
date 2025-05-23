@@ -91,6 +91,16 @@ class Buffer {
     mLength += size;
     mBackOffset = mLength;
   }
+  void Add(void* ptr) {
+    long long val = reinterpret_cast<long long>(ptr);
+    Add(&val, 1);  // 调用模板 Add<long long>()
+  }
+
+  // ✅ 重载：支持 const void*
+  void Add(const void* ptr) {
+    long long val = reinterpret_cast<long long>(ptr);
+    Add(&val, 1);  // 调用模板 Add<long long>()
+  }
 
   template <class T>
   void AddConst(const T item) {
@@ -226,6 +236,7 @@ class Buffer {
         mOffset += sizeof(T) * n;
         return result;
     }
+  // AssignAll<void>
 
   char *AssignString() {
     size_t size = Get<size_t>();
@@ -264,3 +275,38 @@ class Buffer {
   bool mOwnBuffer;
 };
 }  // namespace gvirtus::communicators
+
+// === Explicit specializations for void ===
+
+namespace gvirtus {
+  namespace communicators {
+
+    // Specialization: Assign<void>(size_t n)
+    template <>
+    inline void* Buffer::Assign<void>(size_t n) {
+      if (Get<size_t>() == 0) return nullptr;
+
+      if (mOffset + n > mLength)
+        throw std::string("Buffer::Assign<void>(n): Out of range");
+
+      void* result = mpBuffer + mOffset;
+      mOffset += n;
+      return result;
+    }
+
+    // Specialization: AssignAll<void>()
+    template <>
+    inline void* Buffer::AssignAll<void>() {
+      size_t size = Get<size_t>();
+      if (size == 0) return nullptr;
+
+      if (mOffset + size > mLength)
+        throw std::string("Buffer::AssignAll<void>(): Out of range");
+
+      void* result = mpBuffer + mOffset;
+      mOffset += size;
+      return result;
+    }
+
+  }  // namespace communicators
+}  // namespace gvirtus
