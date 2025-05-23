@@ -30,6 +30,8 @@
 #include "CudnnHandler.h"
 #include <random>
 #include <unordered_set>
+#include <set>
+#include <map>
 
 using namespace std;
 using namespace log4cplus;
@@ -37,7 +39,9 @@ using namespace log4cplus;
 std::map<string, CudnnHandler::CudnnRoutineHandler> * CudnnHandler::mspHandlers = NULL;
 static std::map<int, std::set<int>> session_handle_map;
 static std::set<int> allocated_handle_ids;
-static std::unordered_set<int> allocated_handle_ids;
+static std::map<int, cudnnContext*> handle_pool;
+
+
 
 int generate_random_handle_id() {
     static std::mt19937 rng(std::random_device{}());
