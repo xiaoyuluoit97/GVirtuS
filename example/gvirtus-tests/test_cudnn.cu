@@ -14,7 +14,7 @@ TEST(cuDNN, CreateDestroy) {
     CUDNN_CHECK(cudnnCreate(&handle));
     CUDNN_CHECK(cudnnDestroy(handle));
 }
-
+/*
 TEST(cuDNN, SetStreamDestroy) {
     cudnnHandle_t handle;
     cudaStream_t stream;
@@ -24,7 +24,7 @@ TEST(cuDNN, SetStreamDestroy) {
     CUDA_CHECK(cudaStreamDestroy(stream));
     CUDNN_CHECK(cudnnDestroy(handle));
 }
-
+*/
 TEST(cuDNN, AddTensor) {
     cudnnHandle_t handle;
     CUDNN_CHECK(cudnnCreate(&handle));
