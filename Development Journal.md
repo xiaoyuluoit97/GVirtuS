@@ -85,6 +85,10 @@
     - error: 'cudaPushCallConfiguration' was not declared in this scope (In newer CUDA versions (like 10.x or later), this symbol is no longer available for public use.)
     - build succeed
     - but tests do not work (even if the tests like addition, cnn.cu, which works in cuda11.4)
+- improve cudnncreate and cudnndestroy
+  - Our pass handle ID mechanism is now thread-safe
+  - Session creation is now device-based, allowing clear differentiation between different front-end devices
+  - please refer HandlerManger.h
 
 ## **Functionality Summary Table** (continuously updated)
 
