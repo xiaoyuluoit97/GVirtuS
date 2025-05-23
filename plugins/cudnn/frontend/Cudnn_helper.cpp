@@ -44,6 +44,7 @@ void EnsureSessionInitialized() {
         g_session_id = GenerateSessionId();
 }
 
+
 /**
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate        (cudnnHandle_t *handle) {
     CudnnFrontend::Prepare();

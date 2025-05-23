@@ -35,9 +35,8 @@ using namespace std;
 using namespace log4cplus;
 
 std::map<string, CudnnHandler::CudnnRoutineHandler> * CudnnHandler::mspHandlers = NULL;
-
-
-static std::map<int, cudnnHandle_t> handle_pool;
+static std::map<int, std::set<int>> session_handle_map;
+static std::set<int> allocated_handle_ids;
 static std::unordered_set<int> allocated_handle_ids;
 
 int generate_random_handle_id() {
@@ -1277,6 +1276,15 @@ CUDNN_ROUTINE_HANDLER(Create) {
         return std::make_shared<Result>(cs);
     }
 
+    // 从前端获取 session_id
+    int session_id;
+    try {
+        session_id = in->Get<int>();
+    } catch (const std::exception& e) {
+        LOG4CPLUS_ERROR(logger, "Failed to read session_id: " + std::string(e.what()));
+        return std::make_shared<Result>(CUDNN_STATUS_BAD_PARAM);
+    }
+
     // Generate a secure random handle ID
     int handle_id = generate_random_handle_id();
     handle_pool[handle_id] = handle;
@@ -1284,9 +1292,8 @@ CUDNN_ROUTINE_HANDLER(Create) {
     // Associate the handle ID with the session
     session_handle_map[session_id].insert(handle_id);
 
-
     try {
-        out->Add<int>(handle_id);  // return ID to front-end，not handle
+        out->Add<int>(handle_id);  // return ID to front-end, not handle
     } catch (const std::exception& e) {
         LOG4CPLUS_DEBUG(logger, "Buffer::Add failed: " + std::string(e.what()));
         return std::make_shared<Result>(CUDNN_STATUS_EXECUTION_FAILED);
@@ -1295,6 +1302,7 @@ CUDNN_ROUTINE_HANDLER(Create) {
     LOG4CPLUS_DEBUG(logger, "cudnnCreate SUCCESS. ID = " + std::to_string(handle_id));
     return std::make_shared<Result>(cs, out);
 }
+
 /**
 CUDNN_ROUTINE_HANDLER(Destroy){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Destroy"));
@@ -1354,6 +1362,7 @@ CUDNN_ROUTINE_HANDLER(Destroy) {
 
     return std::make_shared<Result>(cs);
 }
+
 
 
 
