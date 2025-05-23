@@ -32,7 +32,7 @@
 #include <unistd.h>
 
 using namespace std;
-
+int g_session_id = -1;
 int GenerateSessionId() {
     using namespace std::chrono;
     auto now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
