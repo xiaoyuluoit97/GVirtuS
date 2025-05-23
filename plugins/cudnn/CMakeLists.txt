@@ -44,4 +44,5 @@ gvirtus_add_frontend(cudnn ${CUDNN_VERSION}
         frontend/Cudnn.cpp
         frontend/Cudnn_helper.cpp
         frontend/CudnnFrontend.cpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/frontend)
 
