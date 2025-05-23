@@ -28,6 +28,8 @@
 #include <cuda_runtime_api.h>
 #include <cudnn.h>
 #include "CudnnHandler.h"
+#include <random>
+#include <unordered_set>
 
 using namespace std;
 using namespace log4cplus;
@@ -36,7 +38,21 @@ std::map<string, CudnnHandler::CudnnRoutineHandler> * CudnnHandler::mspHandlers 
 
 
 static std::map<int, cudnnHandle_t> handle_pool;
-static int next_handle_id = 1;
+static std::unordered_set<int> allocated_handle_ids;
+
+int generate_random_handle_id() {
+    static std::mt19937 rng(std::random_device{}());
+    static std::uniform_int_distribution<int> dist(100000, 999999); // 6-digit handle IDs
+
+    int id;
+    do {
+        id = dist(rng);
+    } while (allocated_handle_ids.count(id) > 0);
+
+    allocated_handle_ids.insert(id);
+    return id;
+}
+
 
 extern "C" std::shared_ptr<CudnnHandler> create_t() {
     return std::make_shared<CudnnHandler>();
@@ -1261,8 +1277,13 @@ CUDNN_ROUTINE_HANDLER(Create) {
         return std::make_shared<Result>(cs);
     }
 
-    int handle_id = next_handle_id++;
+    // Generate a secure random handle ID
+    int handle_id = generate_random_handle_id();
     handle_pool[handle_id] = handle;
+
+    // Associate the handle ID with the session
+    session_handle_map[session_id].insert(handle_id);
+
 
     try {
         out->Add<int>(handle_id);  // return ID to front-end，not handle
@@ -1289,8 +1310,17 @@ CUDNN_ROUTINE_HANDLER(Destroy){
 CUDNN_ROUTINE_HANDLER(Destroy) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Destroy"));
 
-    int handle_id = in->Get<int>();
+    // Retrieve session_id and handle_id from the input buffer
+    int session_id, handle_id;
+    try {
+        session_id = in->Get<int>();
+        handle_id = in->Get<int>();
+    } catch (const std::exception& e) {
+        LOG4CPLUS_ERROR(logger, "Failed to read session_id or handle_id: " + std::string(e.what()));
+        return std::make_shared<Result>(CUDNN_STATUS_BAD_PARAM);
+    }
 
+    // Look up the handle in the pool
     auto it = handle_pool.find(handle_id);
     if (it == handle_pool.end()) {
         LOG4CPLUS_ERROR(logger, "Invalid handle ID: " + std::to_string(handle_id));
@@ -1301,14 +1331,30 @@ CUDNN_ROUTINE_HANDLER(Destroy) {
     cudnnStatus_t cs = cudnnDestroy(handle);
 
     if (cs == CUDNN_STATUS_SUCCESS) {
+        // Remove the handle from the global pool
         handle_pool.erase(it);
-        LOG4CPLUS_DEBUG(logger, "Destroyed handle ID: " + std::to_string(handle_id));
+
+        // Remove handle from session map
+        auto session_it = session_handle_map.find(session_id);
+        if (session_it != session_handle_map.end()) {
+            session_it->second.erase(handle_id);
+            if (session_it->second.empty()) {
+                session_handle_map.erase(session_it);
+            }
+        }
+
+        // Free the handle ID from allocated set
+        allocated_handle_ids.erase(handle_id);
+
+        LOG4CPLUS_DEBUG(logger, "Destroyed handle. session_id=" + std::to_string(session_id) +
+                                 " handle_id=" + std::to_string(handle_id));
     } else {
         LOG4CPLUS_ERROR(logger, "Failed to destroy handle ID: " + std::to_string(handle_id));
     }
 
     return std::make_shared<Result>(cs);
 }
+
 
 
 CUDNN_ROUTINE_HANDLER(SetStream){

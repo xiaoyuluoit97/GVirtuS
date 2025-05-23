@@ -28,8 +28,22 @@
 #include <string>
 
 #include "CudnnFrontend.h"
+#include <chrono>
+#include <unistd.h>
 
 using namespace std;
+
+int GenerateSessionId() {
+    using namespace std::chrono;
+    auto now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return static_cast<int>((now ^ getpid()) & 0x7FFFFFFF);  // 保证是正整数
+}
+
+void EnsureSessionInitialized() {
+    if (g_session_id < 0)
+        g_session_id = GenerateSessionId();
+}
+
 /**
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate        (cudnnHandle_t *handle) {
     CudnnFrontend::Prepare();
@@ -47,19 +61,31 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy       (cudnnHandle_t handle) {
     return CudnnFrontend::GetExitCode();
 }
 **/
+
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate(cudnnHandle_t *handle) {
+    EnsureSessionInitialized();  // make sure the init for session_id
+
     CudnnFrontend::Prepare();
+    CudnnFrontend::AddVariableForArguments<int>(g_session_id);  // pass the info to backend with session_id
     CudnnFrontend::Execute("cudnnCreate");
-    if (CudnnFrontend::Success())
-        *handle = (cudnnHandle_t)CudnnFrontend::GetOutputVariable<int>();
+
+    if (CudnnFrontend::Success()) {
+        int handle_id = CudnnFrontend::GetOutputVariable<int>();
+        *handle = reinterpret_cast<cudnnHandle_t>((uintptr_t)handle_id);
+    }
     return CudnnFrontend::GetExitCode();
 }
 
+
+
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy(cudnnHandle_t handle) {
+    EnsureSessionInitialized();  // validate the session_id 可用
+
     CudnnFrontend::Prepare();
 
     int handle_id = static_cast<int>(reinterpret_cast<uintptr_t>(handle));
-    CudnnFrontend::AddVariableForArguments<int>(handle_id);
+    CudnnFrontend::AddVariableForArguments<int>(g_session_id);  // new: pass session_id
+    CudnnFrontend::AddVariableForArguments<int>(handle_id);     // ori: pass handle
 
     CudnnFrontend::Execute("cudnnDestroy");
     return CudnnFrontend::GetExitCode();
