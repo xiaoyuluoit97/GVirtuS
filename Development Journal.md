@@ -26,7 +26,7 @@
 
 ### **Unresolved Issues**
 
-- The default RDMA protocol in ecn-aau/GVirtuS.git remains non-functional (requires further investigation) in the current Dockerfile.
+- The default RDMA protocol in ecn-aau/GVirtuS.git is not suitable for all environments.
 - limitation:Front-end crashes without releasing resources ｜Adding a session ID? Need help with network communications
   Memory leaks (cudnnDestroy not called) | Tricky … Maybe some resource timeout cleanup mechanism?
   Multi-device contextual confusion  | Extended  the handle_id structure to include the device_id?
