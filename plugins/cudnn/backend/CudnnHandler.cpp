@@ -43,19 +43,6 @@ static std::map<int, cudnnContext*> handle_pool;
 
 
 
-int generate_random_handle_id() {
-    static std::mt19937 rng(std::random_device{}());
-    static std::uniform_int_distribution<int> dist(100000, 999999); // 6-digit handle IDs
-
-    int id;
-    do {
-        id = dist(rng);
-    } while (allocated_handle_ids.count(id) > 0);
-
-    allocated_handle_ids.insert(id);
-    return id;
-}
-
 
 extern "C" std::shared_ptr<CudnnHandler> create_t() {
     return std::make_shared<CudnnHandler>();
@@ -1272,40 +1259,27 @@ CUDNN_ROUTINE_HANDLER(Create) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("Create"));
     cudnnHandle_t handle;
     cudnnStatus_t cs = cudnnCreate(&handle);
-
-    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
-
     if (cs != CUDNN_STATUS_SUCCESS) {
-        LOG4CPLUS_ERROR(logger, "cudnnCreate failed with status: " + std::to_string(cs));
+        LOG4CPLUS_ERROR(logger, "cudnnCreate failed");
         return std::make_shared<Result>(cs);
     }
 
-    // 从前端获取 session_id
-    int session_id;
+    int session_id, handle_id;
     try {
         session_id = in->Get<int>();
+        handle_id = in->Get<int>();
     } catch (const std::exception& e) {
-        LOG4CPLUS_ERROR(logger, "Failed to read session_id: " + std::string(e.what()));
         return std::make_shared<Result>(CUDNN_STATUS_BAD_PARAM);
     }
 
-    // Generate a secure random handle ID
-    int handle_id = generate_random_handle_id();
+    // 存储和追踪
     handle_pool[handle_id] = handle;
-
-    // Associate the handle ID with the session
     session_handle_map[session_id].insert(handle_id);
 
-    try {
-        out->Add<int>(handle_id);  // return ID to front-end, not handle
-    } catch (const std::exception& e) {
-        LOG4CPLUS_DEBUG(logger, "Buffer::Add failed: " + std::string(e.what()));
-        return std::make_shared<Result>(CUDNN_STATUS_EXECUTION_FAILED);
-    }
-
-    LOG4CPLUS_DEBUG(logger, "cudnnCreate SUCCESS. ID = " + std::to_string(handle_id));
-    return std::make_shared<Result>(cs, out);
+    LOG4CPLUS_DEBUG(logger, "cudnnCreate: handle_id=" + std::to_string(handle_id));
+    return std::make_shared<Result>(cs);
 }
+
 
 /**
 CUDNN_ROUTINE_HANDLER(Destroy){

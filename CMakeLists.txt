@@ -85,7 +85,8 @@ add_executable(gvirtus-backend
         src/backend/Backend.cpp
         src/backend/main.cpp
         src/backend/Process.cpp
-        src/backend/Property.cpp)
+        src/backend/Property.cpp
+        plugins/cudnn/backend/HandleManager.h)
 target_link_libraries(gvirtus-backend gvirtus-communicators Threads::Threads rdmacm ibverbs)
 gvirtus_install_target(gvirtus-backend)
 

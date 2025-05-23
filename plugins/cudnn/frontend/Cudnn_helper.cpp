@@ -28,15 +28,15 @@
 #include <string>
 
 #include "CudnnFrontend.h"
+#include "HandleManager.h"   // 你放 HandleManager 类的头文件路径
 #include <chrono>
 #include <unistd.h>
-
-using namespace std;
 int g_session_id = -1;
+
 int GenerateSessionId() {
     using namespace std::chrono;
     auto now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return static_cast<int>((now ^ getpid()) & 0x7FFFFFFF);  // 保证是正整数
+    return static_cast<int>((now ^ getpid()) & 0x7FFFFFFF);
 }
 
 void EnsureSessionInitialized() {
@@ -64,31 +64,38 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy       (cudnnHandle_t handle) {
 **/
 
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreate(cudnnHandle_t *handle) {
-    EnsureSessionInitialized();  // make sure the init for session_id
+    EnsureSessionInitialized();
+
+    int handle_id = HandleManager::Instance().GenerateHandleId();
+    *handle = reinterpret_cast<cudnnHandle_t>((uintptr_t)handle_id);
 
     CudnnFrontend::Prepare();
-    CudnnFrontend::AddVariableForArguments<int>(g_session_id);  // pass the info to backend with session_id
+    CudnnFrontend::AddVariableForArguments<int>(g_session_id);
+    CudnnFrontend::AddVariableForArguments<int>(handle_id);
     CudnnFrontend::Execute("cudnnCreate");
 
     if (CudnnFrontend::Success()) {
-        int handle_id = CudnnFrontend::GetOutputVariable<int>();
-        *handle = reinterpret_cast<cudnnHandle_t>((uintptr_t)handle_id);
+        HandleManager::Instance().Register(handle_id, *handle);
     }
+
     return CudnnFrontend::GetExitCode();
 }
 
 
-
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroy(cudnnHandle_t handle) {
-    EnsureSessionInitialized();  // validate the session_id 可用
-
-    CudnnFrontend::Prepare();
+    EnsureSessionInitialized();
 
     int handle_id = static_cast<int>(reinterpret_cast<uintptr_t>(handle));
-    CudnnFrontend::AddVariableForArguments<int>(g_session_id);  // new: pass session_id
-    CudnnFrontend::AddVariableForArguments<int>(handle_id);     // ori: pass handle
 
+    CudnnFrontend::Prepare();
+    CudnnFrontend::AddVariableForArguments<int>(g_session_id);
+    CudnnFrontend::AddVariableForArguments<int>(handle_id);
     CudnnFrontend::Execute("cudnnDestroy");
+
+    if (CudnnFrontend::Success()) {
+        HandleManager::Instance().Unregister(handle_id);
+    }
+
     return CudnnFrontend::GetExitCode();
 }
 
