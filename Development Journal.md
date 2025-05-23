@@ -90,6 +90,69 @@
   - Session creation is now device-based, allowing clear differentiation between different front-end devices
   - please refer HandlerManger.h
 
+```text
+running log
+[ RUN      ] CuDNNTestWithCatch.AddTensor
+[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:59
+[CUDA OK] cudaMalloc(&d_A, size * sizeof(float)) in test_cudnn.cu:67
+[CUDA OK] cudaMalloc(&d_B, size * sizeof(float)) in test_cudnn.cu:68
+[CUDA OK] cudaMemcpy(d_A, h_A, sizeof(h_A), cudaMemcpyHostToDevice) in test_cudnn.cu:70
+[CUDA OK] cudaMemcpy(d_B, h_B, sizeof(h_B), cudaMemcpyHostToDevice) in test_cudnn.cu:71
+[cuDNN OK] cudnnCreateTensorDescriptor(&desc) in test_cudnn.cu:74
+Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
+test_cudnn.cu:23: Failure
+Failed
+Test failed due to std::string exception
+[  FAILED  ] CuDNNTestWithCatch.AddTensor (4 ms)
+[ RUN      ] CuDNNTestWithCatch.PoolingForward
+[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:110
+[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:118
+[CUDA OK] cudaMalloc(&d_output, sizeof(float)) in test_cudnn.cu:119
+[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:121
+[cuDNN OK] cudnnCreateTensorDescriptor(&inputDesc) in test_cudnn.cu:124
+[cuDNN OK] cudnnCreateTensorDescriptor(&outputDesc) in test_cudnn.cu:125
+Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
+test_cudnn.cu:23: Failure
+Failed
+Test failed due to std::string exception
+[  FAILED  ] CuDNNTestWithCatch.PoolingForward (1 ms)
+[ RUN      ] CuDNNTestWithCatch.ConvolutionForward
+[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:168
+[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:178
+[CUDA OK] cudaMalloc(&d_filter, sizeof(float)) in test_cudnn.cu:179
+[CUDA OK] cudaMalloc(&d_output, size * sizeof(float)) in test_cudnn.cu:180
+[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:182
+[CUDA OK] cudaMemcpy(d_filter, h_filter, sizeof(h_filter), cudaMemcpyHostToDevice) in test_cudnn.cu:183
+[cuDNN OK] cudnnCreateTensorDescriptor(&inputDesc) in test_cudnn.cu:190
+[cuDNN OK] cudnnCreateTensorDescriptor(&outputDesc) in test_cudnn.cu:191
+[cuDNN OK] cudnnCreateFilterDescriptor(&filterDesc) in test_cudnn.cu:192
+[cuDNN OK] cudnnCreateConvolutionDescriptor(&convDesc) in test_cudnn.cu:193
+Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
+test_cudnn.cu:23: Failure
+Failed
+Test failed due to std::string exception
+[  FAILED  ] CuDNNTestWithCatch.ConvolutionForward (5 ms)
+[ RUN      ] CuDNNTestWithCatch.FilterDescriptorCreateSetGet
+[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:248
+[cuDNN OK] cudnnCreateFilterDescriptor(&filterDesc) in test_cudnn.cu:251
+Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
+test_cudnn.cu:23: Failure
+Failed
+Test failed due to std::string exception
+[  FAILED  ] CuDNNTestWithCatch.FilterDescriptorCreateSetGet (1 ms)
+[ RUN      ] CuDNNTestWithCatch.LRNForward
+[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:279
+[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:289
+[CUDA OK] cudaMalloc(&d_output, size * sizeof(float)) in test_cudnn.cu:290
+[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:292
+[cuDNN OK] cudnnCreateTensorDescriptor(&tensorDesc) in test_cudnn.cu:296
+Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
+test_cudnn.cu:23: Failure
+Failed
+Test failed due to std::string exception
+[  FAILED  ] CuDNNTestWithCatch.LRNForward (2 ms)
+```
+
 ## **Functionality Summary Table** (continuously updated)
 
 | **Library** | **Unsupported** | **Functional** | **Untested** |
