@@ -47,7 +47,7 @@ cudaChooseDevice(int *device, const cudaDeviceProp *prop) {
   return CudaRtFrontend::GetExitCode();
 }
 
-extern "C" __host__ cudaError_t CUDARTAPI cudaGetDevice(int *device) {
+extern "C" __host__ __device__ cudaError_t CUDARTAPI cudaGetDevice(int *device) {
   CudaRtFrontend::Prepare();
   CudaRtFrontend::AddHostPointerForArguments(device);
   CudaRtFrontend::Execute("cudaGetDevice");
@@ -72,11 +72,8 @@ cudaGetDeviceProperties(cudaDeviceProp *prop, int device) {
   CudaRtFrontend::AddVariableForArguments(device);
   CudaRtFrontend::Execute("cudaGetDeviceProperties");
   if (CudaRtFrontend::Success()) {
-    memmove(prop, CudaRtFrontend::GetOutputHostPointer<cudaDeviceProp>(),
-            sizeof(cudaDeviceProp));
-    char name[sizeof(prop->name)];
-    snprintf(name, sizeof(name), "%s", prop->name);
-    snprintf(prop->name, sizeof(prop->name), "%s (GVirtuS)", name);
+    memmove(prop, CudaRtFrontend::GetOutputHostPointer<cudaDeviceProp>(), sizeof(cudaDeviceProp));
+    strncat(prop->name, " (GVirtuS)", sizeof(prop->name) - strlen(prop->name) - 1);
 #ifndef CUDA_VERSION
 #error CUDA_VERSION not defined
 #endif

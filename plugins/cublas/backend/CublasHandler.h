@@ -33,6 +33,7 @@
 #else
 #define CUBLASAPI
 #endif
+
 #endif
 
 #include <iostream>
@@ -40,7 +41,6 @@
 #include <string>
 #include <memory>
 
-// #include <cublas.h>                    //Depreicated for cuda.12.2 version
 #include "cublas_v2.h"
 
 #include <gvirtus/backend/Handler.h>
@@ -285,6 +285,5 @@ CUBLAS_ROUTINE_HANDLER(Strmm_v2);
 CUBLAS_ROUTINE_HANDLER(Dtrmm_v2);
 CUBLAS_ROUTINE_HANDLER(Ctrmm_v2);
 CUBLAS_ROUTINE_HANDLER(Ztrmm_v2);
-/*CUBLAS_ROUTINE_HANDLER(Sscal);
-CUBLAS_ROUTINE_HANDLER(Destroy);*/
-#endif
+
+#endif // _CUBLASHANDLER

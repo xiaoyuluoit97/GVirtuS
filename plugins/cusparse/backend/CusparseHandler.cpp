@@ -38,7 +38,6 @@ extern "C" std::shared_ptr<CusparseHandler> create_t() {
     return std::make_shared<CusparseHandler>();
 }
 
-
 extern "C" int HandlerInit() {
     return 0;
 }
@@ -73,7 +72,7 @@ std::shared_ptr<Result> CusparseHandler::Execute(std::string routine, std::share
     map<string, CusparseHandler::CusparseRoutineHandler>::iterator it;
     it = mspHandlers->find(routine);
     if (it == mspHandlers->end())
-        throw "No handler for '" + routine + "' found!";
+        throw runtime_error("No handler for '" + routine + "' found!");
     try {
         return it->second(this, input_buffer);
     } catch (const char *ex) {
@@ -83,24 +82,11 @@ std::shared_ptr<Result> CusparseHandler::Execute(std::string routine, std::share
     return NULL;
 }
 
-void CudnnHandler::Initialize(){
-   if (mspHandlers != NULL)
-        return;
-    mspHandlers = new map<string, CudnnHandler::CusparseRoutineHandler> ();
-
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetVersion));
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetErrorString));
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(Create));
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(Destroy));
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(SetStream));
-    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetStream));  
-}
-
 CUSPARSE_ROUTINE_HANDLER(GetVersion){
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("GetVersion"));
 
     size_t version = cusparseGetVersion();
-    LOG4CPLUS_DEBUG(logger,"cusparseGetVersion Executed");
+    LOG4CPLUS_DEBUG(logger, "cusparseGetVersion Executed");
     return std::make_shared<Result>(version);
 }
 
@@ -115,7 +101,7 @@ CUSPARSE_ROUTINE_HANDLER(GetErrorString){
         LOG4CPLUS_DEBUG(logger,e);
         return std::make_shared<Result>(CUSPARSE_STATUS_EXECUTION_FAILED);
     }
-    LOG4CPLUS_DEBUG(logger,"cusparseGetErrorString Executed");
+    LOG4CPLUS_DEBUG(logger, "cusparseGetErrorString Executed");
     return std::make_shared<Result>(CUSPARSE_STATUS_SUCCESS,out);
 }
 
@@ -131,7 +117,7 @@ CUSPARSE_ROUTINE_HANDLER(Create){
                         LOG4CPLUS_DEBUG(logger,e);
                         return std::make_shared<Result>(CUSPARSE_STATUS_EXECUTION_FAILED);
     }
-    LOG4CPLUS_DEBUG(logger,"cusparseCreate Executed");
+    LOG4CPLUS_DEBUG(logger, "cusparseCreate Executed");
     return std::make_shared<Result>(cs,out);
 
 }
@@ -141,7 +127,7 @@ CUSPARSE_ROUTINE_HANDLER(Destroy){
 
     cusparseHandle_t handle = (cusparseHandle_t)in->Get<long long int>();
     cusparseStatus_t cs = cusparseDestroy(handle);
-    cout << "DEBUG - cusparseDestroy Executed"<<endl;
+    LOG4CPLUS_DEBUG(logger, "cusparseDestroy Executed");
     return std::make_shared<Result>(cs);
 }
 
@@ -151,7 +137,7 @@ CUSPARSE_ROUTINE_HANDLER(SetStream){
     cudaStream_t streamId = (cudaStream_t) in->Get<long long int>();
 
     cusparseStatus_t cs = cusparseSetStream(handle,streamId);
-    cout << "DEBUG - cusparseSetStream Executed"<<endl;
+    LOG4CPLUS_DEBUG(logger, "cusparseSetStream Executed");
     return std::make_shared<Result>(cs);
 }
 
@@ -167,6 +153,19 @@ CUSPARSE_ROUTINE_HANDLER(GetStream){
          LOG4CPLUS_DEBUG(logger,e);
          return std::make_shared<Result>(cs);
     }
-    cout << "DEBUG - cusparseGetStream Executed"<<endl;
+    LOG4CPLUS_DEBUG(logger, "cusparseGetStream Executed");
     return std::make_shared<Result>(cs,out);
+}
+
+void CudnnHandler::Initialize(){
+   if (mspHandlers != NULL)
+        return;
+    mspHandlers = new map<string, CudnnHandler::CusparseRoutineHandler> ();
+
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetVersion));
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetErrorString));
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(Create));
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(Destroy));
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(SetStream));
+    mspHandlers->insert(CUSPARSE_ROUTINE_HANDLER_PAIR(GetStream));  
 }

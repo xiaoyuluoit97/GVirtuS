@@ -28,14 +28,15 @@
 
 using namespace std;
 
-// extern const surfaceReference *getSurface(const surfaceReference *handler);
+// extern const cudaSurfaceObject_t*getSurface(const cudaSurfaceObject_t*handler);
 
+// Deprecated
 // CUDA_ROUTINE_HANDLER(BindSurfaceToArray) {
 //   char *surfrefHandler = input_buffer->AssignString();
 
-//   surfaceReference *guestSurfref = input_buffer->Assign<surfaceReference>();
+//   cudaSurfaceObject_t*guestSurfref = input_buffer->Assign<surfaceReference>();
 
-//   surfaceReference *surfref = pThis->GetSurface(surfrefHandler);
+//   cudaSurfaceObject_t*surfref = pThis->GetSurface(surfrefHandler);
 //   cudaChannelFormatDesc *a = &(surfref->channelDesc);
 //   memmove(surfref, guestSurfref, sizeof(surfaceReference));
 //   cudaArray *array = (cudaArray *)input_buffer->Get<pointer_t>();
@@ -46,40 +47,8 @@ using namespace std;
 //   return std::make_shared<Result>(exit_code);
 // }
 
-
-CUDA_ROUTINE_HANDLER(BindSurfaceToArray) {
-  try {
-    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
-
-    // Read handler string (optional in this case if you're storing surface objects)
-    char *surfrefHandler = input_buffer->AssignString();
-
-    // Get array from input
-    cudaArray_t array = reinterpret_cast<cudaArray_t>(input_buffer->Get<pointer_t>());
-
-    // Setup resource descriptor for the array
-    cudaResourceDesc resDesc = {};
-    resDesc.resType = cudaResourceTypeArray;
-    resDesc.res.array.array = array;
-
-    // Create surface object
-    cudaSurfaceObject_t surfaceObj = 0;
-    cudaError_t exit_code = cudaCreateSurfaceObject(&surfaceObj, &resDesc);
-
-    // Store or return the created surface object
-    out->Add<cudaSurfaceObject_t>(surfaceObj);
-    return std::make_shared<Result>(exit_code, out);
-
-  } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return std::make_shared<Result>(cudaErrorMemoryAllocation);
-  }
-}
-
-
-
 // CUDA_ROUTINE_HANDLER(GetTextureReference) {
-//    textureReference *texref;
+//    cudaTextureObject_t* texref;
 //    char *symbol_handler = input_buffer->AssignString();
 //    char *symbol = input_buffer->AssignString();
 //
@@ -88,7 +57,7 @@ CUDA_ROUTINE_HANDLER(BindSurfaceToArray) {
 //        symbol = const_cast<char *> (our_symbol);
 //
 //    cudaError_t exit_code = cudaGetTextureReference(
-//            (const textureReference ** ) &texref, symbol);
+//            (const cudaTextureObject_t** ) &texref, symbol);
 //
 //    Buffer *out = new Buffer();
 //    if(exit_code == cudaSuccess)

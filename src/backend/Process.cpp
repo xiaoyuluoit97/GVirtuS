@@ -44,9 +44,6 @@ Process::Process(std::shared_ptr<LD_Lib<Communicator, std::shared_ptr<Endpoint>>
 }
 
 bool getstring(Communicator *c, string &s) {
-#ifdef DEBUG
-    printf("getstring called.\n");
-#endif
 
     // TODO: FIX LISKOV SUBSTITUTION AND DIPENDENCE INVERSION!!!!!
     if (c->to_string() == "tcpcommunicator") {
@@ -73,7 +70,6 @@ bool getstring(Communicator *c, string &s) {
                 s += std::string(buf);
                 printf("append\n");
                 //free(buf);
-                printf("free\n");
                 return true;
             }
         }
@@ -86,7 +82,7 @@ bool getstring(Communicator *c, string &s) {
         return false;
     }
 
-    throw "Communicator getstring read error... Unknown communicator type...";
+    throw runtime_error("Communicator getstring read error... Unknown communicator type...");
 }
 
 extern std::string getEnvVar(std::string const &key);
@@ -119,7 +115,7 @@ void Process::Start() {
     );
 
     // inserisci i sym dei plugin in h
-    std::function<void(Communicator *)> execute = [=](Communicator *client_comm) {
+    std::function<void(Communicator *)> execute = [this](Communicator *client_comm) {
         LOG4CPLUS_DEBUG(logger, "✓ - [Process " << getpid() << "]" << "Process::Start()'s \"execute\" lambda called");
         // carica i puntatori ai simboli dei moduli in mHandlers
 
@@ -154,7 +150,7 @@ void Process::Start() {
             result->Dump(client_comm);
             if (result->GetExitCode() != 0 && routine.compare("cudaLaunch")) {
                 LOG4CPLUS_DEBUG(logger, "✓ - [Process " << getpid() << "]: Requested '" << routine << "' routine.");
-                LOG4CPLUS_DEBUG(logger, "✓ - - [Process " << getpid() << "]: Exit Code '" << result->GetExitCode() << "'.");
+                LOG4CPLUS_DEBUG(logger, "✓ - [Process " << getpid() << "]: Exit Code '" << result->GetExitCode() << "'.");
             }
         }
 

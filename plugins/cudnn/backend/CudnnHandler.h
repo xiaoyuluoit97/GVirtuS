@@ -22,107 +22,6 @@
  * Written by: Raffaele Montella <raffaele.montella@uniparthenope.it>,
  *             Department of Science and Technologies
  */
-/*
-#include "Handler.h"
-#include "communicator/Result.h"
-#include "CudaUtil.h"
-#include <cudnn.h>
-
-#include "log4cplus/logger.h"
-#include "log4cplus/loggingmacros.h"
-#include "log4cplus/configurator.h"
-
-class CudnnHandler : public Handler {
-public:
-    CudnnHandler();
-    virtual ~CudnnHandler();
-    bool CanExecute(std::string routine);
-    Result * Execute(std::string routine, Buffer * input_buffer);
-*/
-    /*void * RegisterPointer(void *,size_t);
-
-    void RegisterMapObject(char *,char *);
-    char * GetMapObject(char *);
-    *//*
-private:
-    log4cplus::Logger logger;
-    void Initialize();
-    typedef Result * (*CudnnRoutineHandler)(CudnnHandler *, Buffer *);
-    static std::map<std::string, CudnnRoutineHandler> * mspHandlers;
-    //void **pointers;
-    //int nPointers;
-    
-    //std::map<std::string, std::string> * mpMapObject;
-
-    //void *mpShm;
-    //int mShmFd;
-};
-
-#define CUDNN_ROUTINE_HANDLER(name) Result * handle##name(CudnnHandler * pThis, Buffer * in)
-#define CUDNN_ROUTINE_HANDLER_PAIR(name) make_pair("cudnn" #name, handle##name)
-*/
-/* CudnnHandler_Platform *//*
-CUDNN_ROUTINE_HANDLER(GetVersion);
-CUDNN_ROUTINE_HANDLER(Create);
-CUDNN_ROUTINE_HANDLER(Destroy);
-CUDNN_ROUTINE_HANDLER(GetErrorString);
-CUDNN_ROUTINE_HANDLER(SetStream);
-CUDNN_ROUTINE_HANDLER(GetStream);
-CUDNN_ROUTINE_HANDLER(CreateTensorDescriptor);
-CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptor);
-CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptorEx);
-CUDNN_ROUTINE_HANDLER(GetTensor4dDescriptor);
-CUDNN_ROUTINE_HANDLER(SetTensorNdDescriptor);
-CUDNN_ROUTINE_HANDLER(DestroyTensorDescriptor);
-CUDNN_ROUTINE_HANDLER(TransformTensor);
-CUDNN_ROUTINE_HANDLER(AddTensor);
-CUDNN_ROUTINE_HANDLER(OpTensor);
-CUDNN_ROUTINE_HANDLER(SetTensor);
-CUDNN_ROUTINE_HANDLER(ScaleTensor);
-CUDNN_ROUTINE_HANDLER(CreateFilterDescriptor);
-CUDNN_ROUTINE_HANDLER(SetFilter4dDescriptor);
-CUDNN_ROUTINE_HANDLER(GetFilter4dDescriptor);
-CUDNN_ROUTINE_HANDLER(SetFilter4dDescriptor_v3);
-CUDNN_ROUTINE_HANDLER(GetFilter4dDescriptor_v3);
-CUDNN_ROUTINE_HANDLER(SetFilter4dDescriptor_v4);
-CUDNN_ROUTINE_HANDLER(GetFilter4dDescriptor_v4);
-CUDNN_ROUTINE_HANDLER(SetFilterNdDescriptor);
-CUDNN_ROUTINE_HANDLER(GetFilterNdDescriptor);
-CUDNN_ROUTINE_HANDLER(SetFilterNdDescriptor_v3);
-CUDNN_ROUTINE_HANDLER(GetFilterNdDescriptor_v3);
-CUDNN_ROUTINE_HANDLER(SetFilterNdDescriptor_v4);
-CUDNN_ROUTINE_HANDLER(GetFilterNdDescriptor_v4);
-CUDNN_ROUTINE_HANDLER(DestroyFilterDescriptor);
-CUDNN_ROUTINE_HANDLER(CreateConvolutionDescriptor);
-CUDNN_ROUTINE_HANDLER(SetConvolution2dDescriptor);
-CUDNN_ROUTINE_HANDLER(GetConvolution2dDescriptor);
-CUDNN_ROUTINE_HANDLER(GetConvolution2dForwardOutputDim);
- //_CUDNNHANDLER_H*/
-/* This file is part of gVirtuS.
-*  *
-* gVirtuS is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-* gVirtuS is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with gVirtuS; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*
-* Written by: Raffaele Montella <raffaele.montella@uniparthenope.it>,
-*             Department of Science and Technologies
-*                   
- * #include "Backend.h"
- *
- * class CudnnBackend : public Backend {
- * public:
- *     Handler *GetHandler();
- *     };
- *     */
 
 #ifndef CUDNNHANDLER_H
 #define CUDNNHANDLER_H
@@ -333,7 +232,7 @@ CUDNN_ROUTINE_HANDLER(DestroyRNNDescriptor);
 CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v5);
 //CUDNN_ROUTINE_HANDLER(GetRNNDescriptor_v5);
 #endif
-#if CUDNN_VERSION >= 6000
+#if CUDNN_VERSION >= 6000 && CUDNN_VERSION < 9000
 CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v6);
 CUDNN_ROUTINE_HANDLER(GetRNNDescriptor_v6);
 #endif
@@ -341,6 +240,8 @@ CUDNN_ROUTINE_HANDLER(GetRNNDescriptor_v6);
 CUDNN_ROUTINE_HANDLER(SetRNNDescriptor_v8);
 CUDNN_ROUTINE_HANDLER(GetRNNDescriptor_v8);
 #endif
+
+#if CUDNN_VERSION < 9000
 CUDNN_ROUTINE_HANDLER(SetRNNMatrixMathType);
 CUDNN_ROUTINE_HANDLER(GetRNNMatrixMathType);
 CUDNN_ROUTINE_HANDLER(SetRNNBiasMode);
@@ -363,10 +264,6 @@ CUDNN_ROUTINE_HANDLER(RNNBackwardData);
 CUDNN_ROUTINE_HANDLER(RNNBackwardWeights);
 CUDNN_ROUTINE_HANDLER(SetRNNPaddingMode);
 CUDNN_ROUTINE_HANDLER(GetRNNPaddingMode);
-CUDNN_ROUTINE_HANDLER(CreateRNNDataDescriptor);
-CUDNN_ROUTINE_HANDLER(DestroyRNNDataDescriptor);
-CUDNN_ROUTINE_HANDLER(SetRNNDataDescriptor);
-CUDNN_ROUTINE_HANDLER(GetRNNDataDescriptor);
 CUDNN_ROUTINE_HANDLER(RNNForwardTrainingEx);
 CUDNN_ROUTINE_HANDLER(RNNForwardInferenceEx);
 CUDNN_ROUTINE_HANDLER(RNNBackwardDataEx);
@@ -380,6 +277,24 @@ CUDNN_ROUTINE_HANDLER(GetRNNBackwardDataAlgorithmMaxCount);
 CUDNN_ROUTINE_HANDLER(FindRNNBackwardDataAlgorithmEx);
 CUDNN_ROUTINE_HANDLER(GetRNNBackwardWeightsAlgorithmMaxCount);
 CUDNN_ROUTINE_HANDLER(FindRNNBackwardWeightsAlgorithmEx);
+CUDNN_ROUTINE_HANDLER(CreateAlgorithmDescriptor);
+CUDNN_ROUTINE_HANDLER(SetAlgorithmDescriptor);
+CUDNN_ROUTINE_HANDLER(GetAlgorithmDescriptor);
+CUDNN_ROUTINE_HANDLER(CopyAlgorithmDescriptor);
+CUDNN_ROUTINE_HANDLER(DestroyAlgorithmDescriptor);
+CUDNN_ROUTINE_HANDLER(CreateAlgorithmPerformance);
+CUDNN_ROUTINE_HANDLER(SetAlgorithmPerformance);
+CUDNN_ROUTINE_HANDLER(GetAlgorithmPerformance);
+CUDNN_ROUTINE_HANDLER(DestroyAlgorithmPerformance);
+CUDNN_ROUTINE_HANDLER(GetAlgorithmSpaceSize);
+CUDNN_ROUTINE_HANDLER(SaveAlgorithm);
+CUDNN_ROUTINE_HANDLER(RestoreAlgorithm);
+#endif
+
+CUDNN_ROUTINE_HANDLER(CreateRNNDataDescriptor);
+CUDNN_ROUTINE_HANDLER(DestroyRNNDataDescriptor);
+CUDNN_ROUTINE_HANDLER(SetRNNDataDescriptor);
+CUDNN_ROUTINE_HANDLER(GetRNNDataDescriptor);
 CUDNN_ROUTINE_HANDLER(CreateSeqDataDescriptor);
 CUDNN_ROUTINE_HANDLER(DestroySeqDataDescriptor);
 CUDNN_ROUTINE_HANDLER(SetSeqDataDescriptor);
@@ -401,18 +316,7 @@ CUDNN_ROUTINE_HANDLER(GetCTCLossDescriptorEx);
 CUDNN_ROUTINE_HANDLER(DestroyCTCLossDescriptor);
 CUDNN_ROUTINE_HANDLER(CTCLoss);
 CUDNN_ROUTINE_HANDLER(GetCTCLossWorkspaceSize);
-CUDNN_ROUTINE_HANDLER(CreateAlgorithmDescriptor);
-CUDNN_ROUTINE_HANDLER(SetAlgorithmDescriptor);
-CUDNN_ROUTINE_HANDLER(GetAlgorithmDescriptor);
-CUDNN_ROUTINE_HANDLER(CopyAlgorithmDescriptor);
-CUDNN_ROUTINE_HANDLER(DestroyAlgorithmDescriptor);
-CUDNN_ROUTINE_HANDLER(CreateAlgorithmPerformance);
-CUDNN_ROUTINE_HANDLER(SetAlgorithmPerformance);
-CUDNN_ROUTINE_HANDLER(GetAlgorithmPerformance);
-CUDNN_ROUTINE_HANDLER(DestroyAlgorithmPerformance);
-CUDNN_ROUTINE_HANDLER(GetAlgorithmSpaceSize);
-CUDNN_ROUTINE_HANDLER(SaveAlgorithm);
-CUDNN_ROUTINE_HANDLER(RestoreAlgorithm);
+
 CUDNN_ROUTINE_HANDLER(SetCallback);
 CUDNN_ROUTINE_HANDLER(GetCallback);
 CUDNN_ROUTINE_HANDLER(CreateFusedOpsConstParamPack);
@@ -427,6 +331,5 @@ CUDNN_ROUTINE_HANDLER(CreateFusedOpsPlan);
 CUDNN_ROUTINE_HANDLER(DestroyFusedOpsPlan);
 CUDNN_ROUTINE_HANDLER(MakeFusedOpsPlan);
 CUDNN_ROUTINE_HANDLER(FusedOpsExecute);
-
 
 #endif  /* CUDNNHANDLER_H */

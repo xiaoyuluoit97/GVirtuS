@@ -22,12 +22,18 @@
  * Written by: Giuseppe Coviello <giuseppe.coviello@uniparthenope.it>,
  *             Department of Applied Science
  */
-#ifndef CUBLASFRONTEND_H
-#define	CUBLASFRONTEND_H
+#ifndef _CUBLASHANDLER
+#define _CUBLASHANDLER
 
+#ifndef CUBLASAPI
+#ifdef _WIN32
+#define CUBLASAPI __stdcall
+#else
 #define CUBLASAPI
+#endif
 
-// #include <cublas.h>         //Deprecated
+#endif
+
 #include <cublas_api.h>
 #include "cublas_v2.h"
 #include <cuda_runtime_api.h>

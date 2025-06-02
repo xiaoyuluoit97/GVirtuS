@@ -3,6 +3,7 @@
 #include <gvirtus/common/JSON.h>
 #include <memory>
 #include <nlohmann/json.hpp>
+
 #include "Endpoint.h"
 #include "Endpoint_Rdma.h"
 #include "Endpoint_Tcp.h"
@@ -40,7 +41,7 @@ class EndpointFactory {
         ptr = std::make_shared<Endpoint_Rdma>(end);
     }
     else {
-        throw "EndpointFactory::get_endpoint(): Your suite is not compatible!";
+        throw std::runtime_error("EndpointFactory::get_endpoint(): Your suite is not compatible!");
     }
 
     ind_endpoint++;

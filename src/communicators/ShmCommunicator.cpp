@@ -67,14 +67,14 @@ namespace gvirtus {
 
     mFd = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     if (mFd == -1)
-      throw "ShmCommunicator: cannot open shared memory";
+      throw runtime_error("ShmCommunicator: cannot open shared memory");
 
     if (ftruncate(mFd, 2 * 1024 * 1024) == -1)
-      throw "ShmCommunicator: cannot request size";
+      throw runtime_error("ShmCommunicator: cannot request size");
 
     mpShm = reinterpret_cast<char *>(mmap(NULL, 2 * 1024 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, mFd, 0));
     if (mpShm == MAP_FAILED)
-      throw "ShmCommunicator: cannot map shared memory";
+      throw runtime_error("ShmCommunicator: cannot map shared memory");
 
     size_t offset = 0;
 
@@ -120,14 +120,14 @@ namespace gvirtus {
   ShmCommunicator::Serve() {
     struct sockaddr_in addr;
     if ((mSocketFd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-      throw("ShmCommunicator: Socket creation error");
+      throw runtime_error("ShmCommunicator: Socket creation error");
     memset((void *)&addr, 0, sizeof(addr));   /* clear server address */
     addr.sin_family = AF_INET;                /* address type is INET */
     addr.sin_port = htons(6666);              /* daytime port is 13 */
     addr.sin_addr.s_addr = htonl(INADDR_ANY); /* connect from anywhere */
     /* bind socket */
     if (bind(mSocketFd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-      throw("ShmCommunicator: Bind error");
+      throw runtime_error("ShmCommunicator: Bind error");
   }
 
   const Communicator *const
@@ -149,7 +149,7 @@ namespace gvirtus {
     struct sockaddr_in addr;
 
     if ((mSocketFd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-      throw("ShmCommunicator: Socket creation error");
+      throw runtime_error("ShmCommunicator: Socket creation error");
     memset((void *)&addr, 0, sizeof(addr)); /* clear server address */
     addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     addr.sin_family = AF_INET;   /* address type is INET */
@@ -161,14 +161,14 @@ namespace gvirtus {
 
     mFd = shm_open(name, O_RDWR, S_IRUSR | S_IWUSR);
     if (mFd == -1)
-      throw "ShmCommunicator: cannot open shared memory";
+      throw runtime_error("ShmCommunicator: cannot open shared memory");
 
     if (ftruncate(mFd, 2 * 1024 * 1024) == -1)
-      throw "ShmCommunicator: cannot request size";
+      throw runtime_error("ShmCommunicator: cannot request size");
 
     mpShm = reinterpret_cast<char *>(mmap(NULL, 2 * 1024 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, mFd, 0));
     if (mpShm == MAP_FAILED)
-      throw "ShmCommunicator: cannot map shared memory";
+      throw runtime_error("ShmCommunicator: cannot map shared memory");
 
     size_t offset = 0;
     /* semaphores */
