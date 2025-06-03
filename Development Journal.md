@@ -37,7 +37,7 @@
 
 | **Library** | **Status** |
 | --- | --- |
-| **cuRAND** | Basic functionality confirmed. |
+| **cudaRT** | Basic functionality confirmed. |
 | **cuBLAS** | Basic functionality confirmed. |
 | **cuFFT** | Backend communication error: `Request unknown routine`. |
 | **cuRAND** | Partial support: Some functions undefined. |
@@ -90,134 +90,15 @@
   - Session creation is now device-based, allowing clear differentiation between different front-end devices
   - please refer HandlerManger.h
 
-```text
-running log
-[ RUN      ] CuDNNTestWithCatch.AddTensor
-[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:59
-[CUDA OK] cudaMalloc(&d_A, size * sizeof(float)) in test_cudnn.cu:67
-[CUDA OK] cudaMalloc(&d_B, size * sizeof(float)) in test_cudnn.cu:68
-[CUDA OK] cudaMemcpy(d_A, h_A, sizeof(h_A), cudaMemcpyHostToDevice) in test_cudnn.cu:70
-[CUDA OK] cudaMemcpy(d_B, h_B, sizeof(h_B), cudaMemcpyHostToDevice) in test_cudnn.cu:71
-[cuDNN OK] cudnnCreateTensorDescriptor(&desc) in test_cudnn.cu:74
-Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
-test_cudnn.cu:23: Failure
-Failed
-Test failed due to std::string exception
-[  FAILED  ] CuDNNTestWithCatch.AddTensor (4 ms)
-[ RUN      ] CuDNNTestWithCatch.PoolingForward
-[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:110
-[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:118
-[CUDA OK] cudaMalloc(&d_output, sizeof(float)) in test_cudnn.cu:119
-[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:121
-[cuDNN OK] cudnnCreateTensorDescriptor(&inputDesc) in test_cudnn.cu:124
-[cuDNN OK] cudnnCreateTensorDescriptor(&outputDesc) in test_cudnn.cu:125
-Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
-test_cudnn.cu:23: Failure
-Failed
-Test failed due to std::string exception
-[  FAILED  ] CuDNNTestWithCatch.PoolingForward (1 ms)
-[ RUN      ] CuDNNTestWithCatch.ConvolutionForward
-[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:168
-[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:178
-[CUDA OK] cudaMalloc(&d_filter, sizeof(float)) in test_cudnn.cu:179
-[CUDA OK] cudaMalloc(&d_output, size * sizeof(float)) in test_cudnn.cu:180
-[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:182
-[CUDA OK] cudaMemcpy(d_filter, h_filter, sizeof(h_filter), cudaMemcpyHostToDevice) in test_cudnn.cu:183
-[cuDNN OK] cudnnCreateTensorDescriptor(&inputDesc) in test_cudnn.cu:190
-[cuDNN OK] cudnnCreateTensorDescriptor(&outputDesc) in test_cudnn.cu:191
-[cuDNN OK] cudnnCreateFilterDescriptor(&filterDesc) in test_cudnn.cu:192
-[cuDNN OK] cudnnCreateConvolutionDescriptor(&convDesc) in test_cudnn.cu:193
-Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
-test_cudnn.cu:23: Failure
-Failed
-Test failed due to std::string exception
-[  FAILED  ] CuDNNTestWithCatch.ConvolutionForward (5 ms)
-[ RUN      ] CuDNNTestWithCatch.FilterDescriptorCreateSetGet
-[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:248
-[cuDNN OK] cudnnCreateFilterDescriptor(&filterDesc) in test_cudnn.cu:251
-Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
-test_cudnn.cu:23: Failure
-Failed
-Test failed due to std::string exception
-[  FAILED  ] CuDNNTestWithCatch.FilterDescriptorCreateSetGet (1 ms)
-[ RUN      ] CuDNNTestWithCatch.LRNForward
-[cuDNN OK] cudnnCreate(&handle) in test_cudnn.cu:279
-[CUDA OK] cudaMalloc(&d_input, size * sizeof(float)) in test_cudnn.cu:289
-[CUDA OK] cudaMalloc(&d_output, size * sizeof(float)) in test_cudnn.cu:290
-[CUDA OK] cudaMemcpy(d_input, h_input, sizeof(h_input), cudaMemcpyHostToDevice) in test_cudnn.cu:292
-[cuDNN OK] cudnnCreateTensorDescriptor(&tensorDesc) in test_cudnn.cu:296
-Caught std::string exception: Buffer::Assign(n): Can't read  Pc.
-test_cudnn.cu:23: Failure
-Failed
-Test failed due to std::string exception
-[  FAILED  ] CuDNNTestWithCatch.LRNForward (2 ms)
-```
-
 **Date:** 26-05-2025 - 30-05-2025
 
-OpenCV currently supports CUDA 12.6 with a few known incompatibilities, such as with RNN and LSTM modules. However, it encounters issues linking to GVirtuS: it cannot locate the remote libraries without a redirection. To properly resolve this, OpenCV needs to be recompiled. CMake struggles to detect the local installation path of the standard CUDA Toolkit, leading to a configuration error. One workaround is to temporarily redirect the CUDA Toolkit environment variable to point to your GVirtuS installation path during the CMake configuration process. This way, necessary environment variables are exported and explicitly tell OpenCV where to find the GVirtuS libraries and headers.
+(Almost solved) OpenCV currently supports CUDA 12.6 with a few known incompatibilities, such as with RNN and LSTM modules. However, it encounters issues linking to GVirtuS: it cannot locate the remote libraries without a redirection. To properly resolve this, OpenCV needs to be recompiled. CMake struggles to detect the local installation path of the standard CUDA Toolkit, leading to a configuration error. One workaround is to temporarily redirect the CUDA Toolkit environment variable to point to your GVirtuS installation path during the CMake configuration process. This way, necessary environment variables are exported and explicitly tell OpenCV where to find the GVirtuS libraries and headers.
+
+The main issue with OpenCV is that it refuses to execute if no GPU is detected. I’ve commented out all the GPU detection checks in the OpenCV dnn library, which allows the backend to receive calls as expected. We still need to carefully verify the correctness, especially once the issues with cuDNN are completely resolved.
 
 **Date:** 02-06-2025 - 02-06-2025
 Problem
-There is error if we define CUDA Kernel function like __global__ void at the beginning for cuda 12.6.
-It works for cuda12.2.
 
-## **Functionality Summary Table** (continuously updated)
+(Solved) There is error if we define CUDA Kernel function like __global__ void at the beginning for cuda 12.6.
 
-| **Library** | **Unsupported** | **Functional** | **Untested** |
-| --- | --- | --- | --- |
-| cudaRT |     | see below |     |
-| cuBLAS | see below |     |     |
-| cuDNN | see below | see below | see below |
-| cuFFT | cufftplan1d,cufft2d,cufftPlanMany |     |     |
-| cuRAND | curandDestroyGenerator | curandCreateGenerator |     |
-
-**cudaRT functional**
-cudaRegisterFatBinary
-cudaMelloc
-cudaMemcpy
-cudaRegisterFunction
-cudaRegisterFatBinaryEnd
-cudaUnregisterFatBinary
-cudaPushCallConfiguration
-cudaPopCallConfiguration
-cudaLaunchKernel
-cudaDeviceSynchronize
-cudaDeviceSynchronize
-cudaFree
-cudaEventCreate
-cudaEventElapsedTime
-cudaEventRecord
-cudaEventSynchronize
-
-**cuDNN functional**
-cudnnCreate
-cudnnDestroy
-cudnnCreatePoolingDescriptor
-cudnnCreateTensorDescriptor
-cudnnCreateConvolutionDescriptor
-cudnnCreateFilterDescriptor
-cudnnSetTensor4dDescriptor
-cudnnSetFilter4dDescriptor
-cudnnSetConvolution2dDescriptor
-cudnnCreateLRNDescriptor
-cudnnSetLRNDescriptor
-
-**cuDNN unsupported**
-cudnnPoolingForward: Execution exception: Buffer::Read(*c, n): Can't reallocate memory.
-cudnnGetConvolutionBackwardDataWorkspaceSize
-cudnnLRNCrossChannelForward: Execution exception: Buffer::Read(*c, n): Can't reallocate memory.
-
-**cuDNN untested**
-cudnnDestroyTensorDescriptor
-cudnnDestroyPoolingDescriptor
-cudnnConvolutionBackwardData
-cudnnDestroyFilterDescriptor
-cudnnDestroyConvolutionDescriptor
-cudnnDestroyLRNDescriptor
-
-**cuBLAS functional**
-cublasCreate_v2
-cublasSgemm_v2
-cublasSaxpy_v2
-cublasDestroy_v2
+aligment_12.2 is the current working branch. It takes cues from Theo’s CUDA 12.6 implementation and the code is more elegant.
