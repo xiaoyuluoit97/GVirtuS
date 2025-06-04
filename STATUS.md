@@ -1,123 +1,130 @@
 # cudaDr (-lcuda)
 
-| Function                          | Implemented | Tested | Working |        Notes            |
-| --------------------------------- | ----------- | ------ | ------- | ----------------------- |
-| `cuInit`                          | ✅          | ❌      | ❓      |                         |
-| `cuCtxCreate`                     | ✅          | ❌      | ❓      |                         |
-| `cuCtxAttach`                     | ✅          | ❌      | ❓      |                         |
-| `cuCtxDestroy`                    | ✅          | ❌      | ❓      |                         |
-| `cuCtxDetach`                     | ✅          | ❌      | ❓      |                         |
-| `cuCtxSetCurrent`                 | ❌          | ❌      | ❌      |                         |
-| `cuCtxGetCurrent`                 | ❌          | ❌      | ❌      |                         |
-| `cuCtxGetDevice`                  | ✅          | ❌      | ❓      |                         |
-| `cuCtxPopCurrent`                 | ✅          | ❌      | ❓      |                         |
-| `cuCtxPushCurrent`                | ✅          | ❌      | ❓      |                         |
-| `cuCtxSynchronize`                | ✅          | ❌      | ❓      |                         |
-| `cuCtxDisablePeerAccess`          | ✅          | ❌      | ❓      |                         |
-| `cuCtxEnablePeerAccess`           | ✅          | ❌      | ❓      |                         |
-| `cuDeviceCanAccessPeer`           | ✅          | ❌      | ❓      |                         |
-| `cuDeviceComputeCapability`       | ✅          | ❌      | ❓      |                         |
-| `cuDeviceGet`                     | ✅          | ❌      | ❓      |                         |
-| `cuDeviceGetAttribute`            | ✅          | ❌      | ❓      |                         |
-| `cuDeviceGetCount`                | ✅          | ❌      | ❓      |                         |
-| `cuDeviceGetName`                 | ✅          | ❌      | ❓      |                         |
-| `cuDeviceGetProperties`           | ✅          | ❌      | ❓      |                         |
-| `cuDeviceTotalMem`                | ✅          | ❌      | ❓      |                         |
-| `cuParamSetSize`                  | ✅          | ❌      | ❓      |                         |
-| `cuFuncSetBlockShape`             | ✅          | ❌      | ❓      |                         |
-| `cuLaunchGrid`                    | ✅          | ❌      | ❓      |                         |
-| `cuFuncGetAttribute`              | ✅          | ❌      | ❓      |                         |
-| `cuFuncSetSharedSize`             | ✅          | ❌      | ❓      |                         |
-| `cuLaunch`                        | ✅          | ❌      | ❓      |                         |
-| `cuParamSetf`                     | ✅          | ❌      | ❓      |                         |
-| `cuParamSeti`                     | ✅          | ❌      | ❓      |                         |
-| `cuParamSetv`                     | ✅          | ❌      | ❓      |                         |
-| `cuParamSetTexRef`                | ✅          | ❌      | ❓      |                         |
-| `cuLaunchGridAsync`               | ✅          | ❌      | ❓      |                         |
-| `cuFuncSetCacheConfig`            | ✅          | ❌      | ❓      |                         |
-| `cuMemFree`                       | ✅          | ❌      | ❓      |                         |
-| `cuMemAlloc`                      | ✅          | ❌      | ❓      |                         |
-| `cuMemAllocManaged`               | ❌          | ❌      | ❌      |                         |
-| `cuMemHostAlloc`                  | ❌          | ❌      | ❌      |                         |
-| `cuMemHostFree`                   | ❌          | ❌      | ❌      |                         |
-| `cuMemcpyDtoH`                    | ✅          | ❌      | ❓      |                         |
-| `cuMemcpyHtoD`                    | ✅          | ❌      | ❓      |                         |
-| `cuMemcpyDtoD`                    | ❌          | ❌      | ❌      |                         |
-| `cuMemcpyHtoDAsync`               | ❌          | ❌      | ❌      |                         |
-| `cuMemcpyDtoHAsync`               | ❌          | ❌      | ❌      |                         |
-| `cuMemsetD32`                     | ❌          | ❌      | ❌      |                         |
-| `cuMemsetD8`                      | ❌          | ❌      | ❌      |                         |
-| `cuArrayCreate`                   | ✅          | ❌      | ❓      |                         |
-| `cuMemcpy2D`                      | ✅          | ❌      | ❓      |                         |
-| `cuArrayDestroy`                  | ✅          | ❌      | ❓      |                         |
-| `cuArray3DCreate`                 | ✅          | ❌      | ❓      |                         |
-| `cuMemAllocPitch`                 | ✅          | ❌      | ❓      |                         |
-| `cuMemGetAddressRange`            | ✅          | ❌      | ❓      |                         |
-| `cuMemGetInfo`                    | ✅          | ❌      | ❓      |                         |
-| `cuModuleLoadData`                | ✅          | ❌      | ❓      |                         |
-| `cuModuleLoad`                    | ✅          | ❌      | ❓      |                         |
-| `cuModuleLoadFatBinary`           | ✅          | ❌      | ❓      |                         |
-| `cuModuleUnload`                  | ✅          | ❌      | ❓      |                         |
-| `cuModuleGetFunction`             | ✅          | ❌      | ❓      |                         |
-| `cuModuleGetGlobal`               | ✅          | ❌      | ❓      |                         |
-| `cuModuleLoadDataEx`              | ✅          | ❌      | ❓      |                         |
-| `cuModuleGetTexRef`               | ✅          | ❌      | ❓      |                         |
-| `cuDriverGetVersion`              | ✅          | ❌      | ❓      |                         |
-| `cuStreamCreate`                  | ✅          | ❌      | ❓      |                         |
-| `cuStreamDestroy`                 | ✅          | ❌      | ❓      |                         |
-| `cuStreamQuery`                   | ✅          | ❌      | ❓      |                         |
-| `cuStreamSynchronize`             | ✅          | ❌      | ❓      |                         |
-| `cuEventCreate`                   | ✅          | ❌      | ❓      |                         |
-| `cuEventDestroy`                  | ✅          | ❌      | ❓      |                         |
-| `cuEventElapsedTime`              | ✅          | ❌      | ❓      |                         |
-| `cuEventQuery`                    | ✅          | ❌      | ❓      |                         |
-| `cuEventRecord`                   | ✅          | ❌      | ❓      |                         |
-| `cuEventSynchronize`              | ✅          | ❌      | ❓      |                         |
-| `cuLinkCreate`                    | ❌          | ❌      | ❌      |                         |
-| `cuLinkAddData`                   | ❌          | ❌      | ❌      |                         |
-| `cuLinkComplete`                  | ❌          | ❌      | ❌      |                         |
-| `cuModuleLoadDataEx`              | ❌          | ❌      | ❌      |                         |
-| `cuGraphicsGLRegisterBuffer`      | ❌          | ❌      | ❌      |                         |
-| `cuGraphicsMapResources`          | ❌          | ❌      | ❌      |                         |
-| `cuTexRefSetArray`                | ✅          | ❌      | ❓      |                         |
-| `cuTexRefSetAddressMode`          | ✅          | ❌      | ❓      |                         |
-| `cuTexRefSetFilterMode`           | ✅          | ❌      | ❓      |                         |
-| `cuTexRefSetFlags`                | ✅          | ❌      | ❓      |                         |
-| `cuTexRefSetFormat`               | ✅          | ❌      | ❓      |                         |
-| `cuTexRefGetAddress`              | ✅          | ❌      | ❓      |                         |
-| `cuTexRefGetArray`                | ✅          | ❌      | ❓      |                         |
-| `cuTexRefGetFlags`                | ✅          | ❌      | ❓      |                         |
-| `cuTexRefSetAddress`              | ✅          | ❌      | ❓      |                         |
-| `cuLaunchKernel`                  | ✅          | ❌      | ❓      |                         |
+| Function                          | Implemented | Tested  | Working |        Notes             |
+| --------------------------------- | ----------- | ------- | ------- | ------------------------ |
+| `cuInit`                          | ✅          | ❌      | ❓      |                          |
+| `cuCtxCreate`                     | ✅          | ❌      | ❓      |                          |
+| `cuCtxAttach`                     | ✅          | ❌      | ❓      | Deprecated               |
+| `cuCtxDestroy`                    | ✅          | ❌      | ❓      |                          |
+| `cuCtxDetach`                     | ✅          | ❌      | ❓      | Deprecated               |
+| `cuCtxSetCurrent`                 | ❌          | ❌      | ❌      |                          |
+| `cuCtxGetCurrent`                 | ❌          | ❌      | ❌      |                          |
+| `cuCtxGetDevice`                  | ✅          | ❌      | ❓      |                          |
+| `cuCtxPopCurrent`                 | ✅          | ❌      | ❓      |                          |
+| `cuCtxPushCurrent`                | ✅          | ❌      | ❓      |                          |
+| `cuCtxSynchronize`                | ✅          | ❌      | ❓      |                          |
+| `cuCtxDisablePeerAccess`          | ✅          | ❌      | ❓      |                          |
+| `cuCtxEnablePeerAccess`           | ✅          | ❌      | ❓      |                          |
+| `cuDeviceCanAccessPeer`           | ✅          | ❌      | ❓      |                          |
+| `cuDeviceComputeCapability`       | ✅          | ❌      | ❓      | Deprecated               |
+| `cuDeviceGet`                     | ✅          | ❌      | ❓      |                          |
+| `cuDeviceGetAttribute`            | ✅          | ❌      | ❓      |                          |
+| `cuDeviceGetCount`                | ✅          | ❌      | ❓      |                          |
+| `cuDeviceGetName`                 | ✅          | ❌      | ❓      |                          |
+| `cuDeviceGetProperties`           | ✅          | ❌      | ❓      | Deprecated               |
+| `cuDeviceTotalMem`                | ✅          | ❌      | ❓      |                          |
+| `cuParamSetSize`                  | ✅          | ❌      | ❓      | Deprecated               |
+| `cuFuncSetBlockShape`             | ✅          | ❌      | ❓      | Deprecated               |
+| `cuLaunchGrid`                    | ✅          | ❌      | ❓      | Deprecated               |
+| `cuFuncGetAttribute`              | ✅          | ❌      | ❓      |                          |
+| `cuFuncSetSharedSize`             | ✅          | ❌      | ❓      | Deprecated               |
+| `cuLaunch`                        | ✅          | ❌      | ❓      | Deprecated               |
+| `cuParamSetf`                     | ✅          | ❌      | ❓      | Deprecated               |
+| `cuParamSeti`                     | ✅          | ❌      | ❓      | Deprecated               |
+| `cuParamSetv`                     | ✅          | ❌      | ❓      | Deprecated               |
+| `cuParamSetTexRef`                | ✅          | ❌      | ❓      | Deprecated               |
+| `cuLaunchGridAsync`               | ✅          | ❌      | ❓      | Deprecated               |
+| `cuFuncSetCacheConfig`            | ✅          | ❌      | ❓      |                          |
+| `cuMemFree`                       | ✅          | ❌      | ❓      |                          |
+| `cuMemAlloc`                      | ✅          | ❌      | ❓      |                          |
+| `cuMemAllocManaged`               | ❌          | ❌      | ❌      |                          |
+| `cuMemHostAlloc`                  | ❌          | ❌      | ❌      |                          |
+| `cuMemHostFree`                   | ❌          | ❌      | ❌      |                          |
+| `cuMemcpyDtoH`                    | ✅          | ❌      | ❓      |                          |
+| `cuMemcpyHtoD`                    | ✅          | ❌      | ❓      |                          |
+| `cuMemcpyDtoD`                    | ❌          | ❌      | ❌      |                          |
+| `cuMemcpyHtoDAsync`               | ❌          | ❌      | ❌      |                          |
+| `cuMemcpyDtoHAsync`               | ❌          | ❌      | ❌      |                          |
+| `cuMemsetD32`                     | ❌          | ❌      | ❌      |                          |
+| `cuMemsetD8`                      | ❌          | ❌      | ❌      |                          |
+| `cuArrayCreate`                   | ✅          | ❌      | ❓      |                          |
+| `cuMemcpy2D`                      | ✅          | ❌      | ❓      |                          |
+| `cuArrayDestroy`                  | ✅          | ❌      | ❓      |                          |
+| `cuArray3DCreate`                 | ✅          | ❌      | ❓      |                          |
+| `cuMemAllocPitch`                 | ✅          | ❌      | ❓      |                          |
+| `cuMemGetAddressRange`            | ✅          | ❌      | ❓      |                          |
+| `cuMemGetInfo`                    | ✅          | ❌      | ❓      |                          |
+| `cuModuleLoadData`                | ✅          | ❌      | ❓      |                          |
+| `cuModuleLoad`                    | ✅          | ❌      | ❓      |                          |
+| `cuModuleLoadFatBinary`           | ✅          | ❌      | ❓      |                          |
+| `cuModuleUnload`                  | ✅          | ❌      | ❓      |                          |
+| `cuModuleGetFunction`             | ✅          | ❌      | ❓      |                          |
+| `cuModuleGetGlobal`               | ✅          | ❌      | ❓      |                          |
+| `cuModuleLoadDataEx`              | ✅          | ❌      | ❓      |                          |
+| `cuModuleGetTexRef`               | ✅          | ❌      | ❓      | Deprecated               |
+| `cuDriverGetVersion`              | ✅          | ❌      | ❓      |                          |
+| `cuStreamCreate`                  | ✅          | ❌      | ❓      |                          |
+| `cuStreamDestroy`                 | ✅          | ❌      | ❓      |                          |
+| `cuStreamQuery`                   | ✅          | ❌      | ❓      |                          |
+| `cuStreamSynchronize`             | ✅          | ❌      | ❓      |                          |
+| `cuEventCreate`                   | ✅          | ❌      | ❓      |                          |
+| `cuEventDestroy`                  | ✅          | ❌      | ❓      |                          |
+| `cuEventElapsedTime`              | ✅          | ❌      | ❓      |                          |
+| `cuEventQuery`                    | ✅          | ❌      | ❓      |                          |
+| `cuEventRecord`                   | ✅          | ❌      | ❓      |                          |
+| `cuEventSynchronize`              | ✅          | ❌      | ❓      |                          |
+| `cuLinkCreate`                    | ❌          | ❌      | ❌      |                          |
+| `cuLinkAddData`                   | ❌          | ❌      | ❌      |                          |
+| `cuLinkComplete`                  | ❌          | ❌      | ❌      |                          |
+| `cuModuleLoadDataEx`              | ❌          | ❌      | ❌      |                          |
+| `cuGraphicsGLRegisterBuffer`      | ❌          | ❌      | ❌      |                          |
+| `cuGraphicsMapResources`          | ❌          | ❌      | ❌      |                          |
+| `cuTexRefSetArray`                | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefSetAddressMode`          | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefSetFilterMode`           | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefSetFlags`                | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefSetFormat`               | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefGetAddress`              | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefGetArray`                | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefGetFlags`                | ✅          | ❌      | ❓      | Deprecated               |
+| `cuTexRefSetAddress`              | ✅          | ❌      | ❓      | Deprecated               |
+| `cuLaunchKernel`                  | ✅          | ❌      | ❓      |                          |
 
 # cudaRT (-lcudart)
 
-| Function                                                 | Implemented | Tested | Working |        Notes            |
-| -------------------------------------------------------- | ----------- | ------ | ------- | ----------------------- |
+| Function                                                 | Implemented | Tested | Working  |          Notes          |
+| -------------------------------------------------------- | ----------- | ------ | -------- | ----------------------- |
 | `cudaMalloc`                                             | ✅          | ✅      | ✅      |                         |
 | `cudaFree`                                               | ✅          | ✅      | ✅      |                         |
 | `cudaMallocHost`                                         | ❌          | ❌      | ❌      |                         |
 | `cudaFreeHost`                                           | ❌          | ❌      | ❌      |                         |
 | `cudaMemcpy`                                             | ✅          | ✅      | ✅      |                         |
 | `cudaMemcpyAsync`                                        | ✅          | ✅      | ✅      |                         |
+| `cudaMemset`                                             | ✅          | ✅      | ✅      |                         |
 | `cudaMemsetAsync`                                        | ✅          | ✅      | ✅      |                         |
 | `cudaGetDevice`                                          | ✅          | ✅      | ✅      |                         |
 | `cudaSetDevice`                                          | ✅          | ✅      | ✅      |                         |
 | `cudaStreamCreate`                                       | ✅          | ✅      | ✅      |                         |
+| `cudaStreamQuery`                                        | ✅          | ❌      | ❓      |                         |
+| `cudaStreamSynchronize`                                  | ✅          | ❌      | ❓      |                         |
+| `cudaStreamCreateWithFlags`                              | ✅          | ❌      | ❓      |                         |
+| `cudaStreamWaitEvent`                                    | ✅          | ❌      | ❓      |                         |
+| `cudaStreamCreateWithPriority`                           | ✅          | ❌      | ❓      |                         |
 | `cudaStreamDestroy`                                      | ✅          | ✅      | ✅      |                         |
 | `cudaEventCreate`                                        | ✅          | ✅      | ✅      |                         |
+| `cudaEventCreateWithFlags`                               | ✅          | ❌      | ❓      |                         |
+| `cudaEventQuery`                                         | ✅          | ❌      | ❓      |                         |
 | `cudaEventRecord`                                        | ✅          | ✅      | ✅      |                         |
 | `cudaEventSynchronize`                                   | ✅          | ✅      | ✅      |                         |
 | `cudaEventElapsedTime`                                   | ✅          | ✅      | ✅      |                         |
+| `cudaEventDestroy`                                       | ✅          | ✅      | ✅      |                         |
 | `cudaChooseDevice`                                       | ✅          | ❌      | ❓      |                         |
-| `cudaGetDevice`                                          | ✅          | ❌      | ❓      |                         |
 | `cudaGetDeviceCount`                                     | ✅          | ❌      | ❓      |                         |
 | `cudaGetDeviceProperties`                                | ✅          | ❌      | ❓      |                         |
-| `cudaSetDevice`                                          | ✅          | ❌      | ❓      |                         |
 | `cudaSetDeviceFlags`                                     | ✅          | ❌      | ❓      |                         |
 | `cudaSetValidDevices`                                    | ✅          | ❌      | ❓      |                         |
 | `cudaDeviceReset`                                        | ✅          | ❌      | ❓      |                         |
-| `cudaDeviceSynchronize`                                  | ✅          | ❌      | ❓      |                         |
+| `cudaDeviceSynchronize`                                  | ✅          | ✅      | ✅      |                         |
 | `cudaDeviceSetCacheConfig`                               | ✅          | ❌      | ❓      |                         |
 | `cudaDeviceSetLimit`                                     | ✅          | ❌      | ❓      |                         |
 | `cudaDeviceCanAccessPeer`                                | ✅          | ❌      | ❓      |                         |
@@ -133,26 +140,19 @@
 | `cudaGetErrorString`                                     | ✅          | ❌      | ❓      |                         |
 | `cudaGetLastError`                                       | ✅          | ❌      | ❓      |                         |
 | `cudaPeekAtLastError`                                    | ✅          | ❌      | ❓      |                         |
-| `cudaEventCreate`                                        | ✅          | ❌      | ❓      |                         |
-| `cudaEventCreateWithFlags`                               | ✅          | ❌      | ❓      |                         |
-| `cudaEventDestroy`                                       | ✅          | ❌      | ❓      |                         |
-| `cudaEventElapsedTime`                                   | ✅          | ❌      | ❓      |                         |
-| `cudaEventQuery`                                         | ✅          | ❌      | ❓      |                         |
-| `cudaEventRecord`                                        | ✅          | ❌      | ❓      |                         |
-| `cudaEventSynchronize`                                   | ✅          | ❌      | ❓      |                         |
-| `cudaConfigureCall`                                      | ✅          | ❌      | ❓      |                         |
 | `cudaFuncGetAttributes`                                  | ✅          | ❌      | ❓      |                         |
 | `cudaFuncSetCacheConfig`                                 | ✅          | ❌      | ❓      |                         |
-| `cudaLaunch`                                             | ✅          | ❌      | ❓      |                         |
-| `cudaLaunchKernel`                                       | ✅          | ❌      | ❓      |                         |
-| `cudaSetDoubleForDevice`                                 | ✅          | ❌      | ❓      |                         |
+| `cudaLaunchKernel`                                       | ✅          | ✅      | ✅      | Tested using both `<<<>>>` and direct syntax |
+| `__cudaPushCallConfiguration`                            | ✅          | ✅      | ✅      | Tested implicitly using `<<<>>>` syntax |
+| `__cudaPopCallConfiguration`                             | ✅          | ✅      | ✅      | Tested implicitly using `<<<>>>` syntax |
+| `cudaLaunch`                                             | ✅          | ❌      | ❓      | This function is deprecated as of CUDA 7.0 |
+| `cudaConfigureCall`                                      | ✅          | ❌      | ❓      | This function is deprecated as of CUDA 7.0 |
+| `cudaSetupArgument`                                      | ✅          | ❌      | ❓      | This function is deprecated as of CUDA 7.0  |
+| `cudaRegisterFatBinary`                                  | ✅          | ✅      | ✅      | Automatically called at program start |
+| `cudaRegisterFatBinaryEnd`                               | ✅          | ✅      | ✅      | Automatically called after `cudaRegisterFatBinary` |
+| `cudaUnregisterFatBinary`                                | ✅          | ✅      | ✅      | Automatically called at program exit |
 | `cudaSetDoubleForHost`                                   | ✅          | ❌      | ❓      |                         |
-| `cudaSetupArgument`                                      | ✅          | ❌      | ❓      |                         |
-| `cudaPushCallConfiguration`                              | ✅          | ❌      | ❓      |                         |
-| `cudaPopCallConfiguration`                               | ✅          | ❌      | ❓      |                         |
-| `cudaRegisterFatBinary`                                  | ✅          | ❌      | ❓      |                         |
-| `cudaRegisterFatBinaryEnd`                               | ✅          | ❌      | ❓      |                         |
-| `cudaUnregisterFatBinary`                                | ✅          | ❌      | ❓      |                         |
+| `cudaSetDoubleForDevice`                                 | ✅          | ❌      | ❓      |                         |
 | `cudaRegisterFunction`                                   | ✅          | ❌      | ❓      |                         |
 | `cudaRegisterVar`                                        | ✅          | ❌      | ❓      |                         |
 | `cudaRegisterSharedVar`                                  | ✅          | ❌      | ❓      |                         |
@@ -161,65 +161,53 @@
 | `cudaRegisterSurface`                                    | ✅          | ❌      | ❓      |                         |
 | `cudaRegisterSharedMemory`                               | ✅          | ❌      | ❓      |                         |
 | `cudaRequestSharedMemory`                                | ✅          | ❌      | ❓      |                         |
-| `cudaFree`                                               | ✅          | ❌      | ❓      |                         |
 | `cudaFreeArray`                                          | ✅          | ❌      | ❓      |                         |
 | `cudaGetSymbolAddress`                                   | ✅          | ❌      | ❓      |                         |
 | `cudaGetSymbolSize`                                      | ✅          | ❌      | ❓      |                         |
-| `cudaMalloc`                                             | ✅          | ❌      | ❓      |                         |
 | `cudaMallocArray`                                        | ✅          | ❌      | ❓      |                         |
 | `cudaMallocPitch`                                        | ✅          | ❌      | ❓      |                         |
 | `cudaMallocManaged`                                      | ✅          | ❌      | ❓      |                         |
-| `cudaMemcpy`                                             | ✅          | ❌      | ❓      |                         |
 | `cudaMemcpy2D`                                           | ✅          | ❌      | ❓      |                         |
 | `cudaMemcpy3D`                                           | ✅          | ❌      | ❓      |                         |
-| `cudaMemcpyAsync`                                        | ✅          | ❌      | ❓      |                         |
 | `cudaMemcpyFromSymbol`                                   | ✅          | ❌      | ❓      |                         |
-| `cudaMemcpyToArray`                                      | ✅          | ❌      | ❓      |                         |
+| `cudaMemcpyToArray`                                      | ✅          | ❌      | ❓      | Deprecated              |
 | `cudaMemcpyToSymbol`                                     | ✅          | ❌      | ❓      |                         |
-| `cudaMemset`                                             | ✅          | ❌      | ❓      |                         |
 | `cudaMemset2D`                                           | ✅          | ❌      | ❓      |                         |
-| `cudaMemcpyFromArray`                                    | ✅          | ❌      | ❓      |                         |
-| `cudaMemcpyArrayToArray`                                 | ✅          | ❌      | ❓      |                         |
+| `cudaMemcpyFromArray`                                    | ✅          | ❌      | ❓      | Deprecated              |
+| `cudaMemcpyArrayToArray`                                 | ✅          | ❌      | ❓      | Deprecated              |
 | `cudaMemcpy2DFromArray`                                  | ✅          | ❌      | ❓      |                         |
 | `cudaMemcpy2DToArray`                                    | ✅          | ❌      | ❓      |                         |
 | `cudaMalloc3DArray`                                      | ✅          | ❌      | ❓      |                         |
 | `cudaMemcpyPeerAsync`                                    | ✅          | ❌      | ❓      |                         |
-| `cudaGLSetGLDevice`                                      | ✅          | ❌      | ❓      |                         |
+| `cudaGLSetGLDevice`                                      | ✅          | ❌      | ❓      | Deprecated              |
 | `cudaGraphicsGLRegisterBuffer`                           | ✅          | ❌      | ❓      |                         |
 | `cudaGraphicsMapResources`                               | ✅          | ❌      | ❓      |                         |
 | `cudaGraphicsResourceGetMappedPointer`                   | ✅          | ❌      | ❓      |                         |
 | `cudaGraphicsUnmapResources`                             | ✅          | ❌      | ❓      |                         |
 | `cudaGraphicsUnregisterResource`                         | ✅          | ❌      | ❓      |                         |
 | `cudaGraphicsResourceSetMapFlags`                        | ✅          | ❌      | ❓      |                         |
-| `cudaStreamCreate`                                       | ✅          | ❌      | ❓      |                         |
-| `cudaStreamDestroy`                                      | ✅          | ❌      | ❓      |                         |
-| `cudaStreamQuery`                                        | ✅          | ❌      | ❓      |                         |
-| `cudaStreamSynchronize`                                  | ✅          | ❌      | ❓      |                         |
-| `cudaStreamCreateWithFlags`                              | ✅          | ❌      | ❓      |                         |
-| `cudaStreamWaitEvent`                                    | ✅          | ❌      | ❓      |                         |
-| `cudaStreamCreateWithPriority`                           | ✅          | ❌      | ❓      |                         |
-| `cudaBindTexture`                                        | ✅          | ❌      | ❓      |                         |
-| `cudaBindTexture2D`                                      | ✅          | ❌      | ❓      |                         |
-| `cudaBindTextureToArray`                                 | ✅          | ❌      | ❓      |                         |
+| `cudaBindTexture`                                        | ✅          | ❌      | ❓      | Deprecated              |
+| `cudaBindTexture2D`                                      | ✅          | ❌      | ❓      | Deprecated              |
+| `cudaBindTextureToArray`                                 | ✅          | ❌      | ❓      | Deprecated              |
 | `cudaCreateTextureObject`                                | ✅          | ❌      | ❓      |                         |
 | `cudaGetChannelDesc`                                     | ✅          | ❌      | ❓      |                         |
-| `cudaGetTextureAlignmentOffset`                          | ✅          | ❌      | ❓      |                         |
-| `cudaGetTextureReference`                                | ✅          | ❌      | ❓      |                         |
-| `cudaUnbindTexture`                                      | ✅          | ❌      | ❓      |                         |
+| `cudaGetTextureAlignmentOffset`                          | ✅          | ❌      | ❓      | Deprecated              |
+| `cudaGetTextureReference`                                | ✅          | ❌      | ❓      | Deprecated              |
+| `cudaUnbindTexture`                                      | ✅          | ❌      | ❓      | Deprecated              |
 | `cudaBindSurfaceToArray`                                 | ✅          | ❌      | ❓      |                         |
 | `cudaGetTextureReference`                                | ✅          | ❌      | ❓      |                         |
-| `cudaThreadExit`                                         | ✅          | ❌      | ❓      |                         |
-| `cudaThreadSynchronize`                                  | ✅          | ❌      | ❓      |                         |
+| `cudaThreadExit`                                         | ✅          | ❌      | ❓      | Deprecated in favor of `cudaDeviceReset` |
+| `cudaThreadSynchronize`                                  | ✅          | ❌      | ❓      | Deprecated in favor of `cudaDeviceSynchronize` |
 | `cudaDriverGetVersion`                                   | ✅          | ❌      | ❓      |                         |
 | `cudaRuntimeGetVersion`                                  | ✅          | ❌      | ❓      |                         |
 | `cudaOccupancyMaxActiveBlocksPerMultiprocessor`          | ✅          | ❌      | ❓      |                         |
-| `cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags` | ✅          | ❌      |❓       |                         |
+| `cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags` | ✅          | ❌      | ❓      |                         |
 
 
 # cuBLAS (-lcublas)
 
-| Function                | Implemented | Tested | Working |          Notes          |
-| ----------------------- | ----------- | ------ | ------- | ------------------------|
+| Function                | Implemented | Tested | Working  |          Notes          |
+| ----------------------- | ----------- | ------ | -------- | ------------------------|
 | `cublasCreate`          | ✅          | ✅      | ✅      |                         |
 | `cublasDestroy`         | ✅          | ✅      | ✅      |                         |
 | `cublasGetVersion`      | ✅          | ✅      | ✅      |                         |
@@ -394,8 +382,8 @@ cuBLAS handle typedefs changed in CUDA 12.
 
 # cuRAND (-lcurand)
 
-| Function                                  | Implemented | Tested | Working |          Notes           |
-| ----------------------------------------- | ----------- | ------ | ------- | -------------------------|
+| Function                                  | Implemented | Tested  | Working |          Notes           |
+| ----------------------------------------- | ----------- | ------- | ------- | -------------------------|
 | `curandCreateGenerator`                   | ✅          | ✅      | ✅      |                          |
 | `curandCreateGeneratorHost`               | ✅          | ✅      | ✅      |                          |
 | `curandSetPseudoRandomGeneratorSeed`      | ✅          | ✅      | ✅      |                          |
@@ -417,8 +405,8 @@ cuBLAS handle typedefs changed in CUDA 12.
 
 # cuFFT (-lcufft)
 
-| Function                                  | Implemented | Tested | Working |          Notes           |
-| ----------------------------------------- | ----------- | ------ | ------- | -------------------------|
+| Function                                  | Implemented | Tested  | Working |          Notes           |
+| ----------------------------------------- | ----------- | ------- | ------- | -------------------------|
 | `cufftCreate`                             | ✅          | ✅      | ✅      |                          |
 | `cufftDestroy`                            | ✅          | ✅      | ✅      |                          |
 | `cufftPlan1D`                             | ✅          | ✅      | ✅      |                          |
@@ -460,8 +448,8 @@ cuFFT handle typedefs changed in CUDA 12.
 
 # cuDNN (-lcudnn)
 
-| Function                                                   | Implemented | Tested | Working |          Notes           |
-| ---------------------------------------------------------- | ----------- | ------ | ------- | -------------------------|
+| Function                                                   | Implemented | Tested  | Working |          Notes           |
+| ---------------------------------------------------------- | ----------- | ------- | ------- | -------------------------|
 | `cuDNNCreate`                                              | ✅          | ✅      | ✅      |                          | 
 | `cuDNNDestroy`                                             | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetVersion`                                          | ✅          | ✅      | ✅      |                          | 
@@ -482,10 +470,10 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNSetTensorTransformDescriptor`                        | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetTensorTransformDescriptor`                        | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDestroyTensorTransformDescriptor`                    | ✅          | ❌      | ❓      |                          | 
-| `cuDNNTransformTensor`                                     | ✅          | ❌      | ❓      |                          | 
+| `cuDNNTransformTensor`                                     | ✅          | ✅      | ❌      |                          | 
 | `cuDNNTransformTensorEx`                                   | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetFoldedConvBackwardDataDescriptors`                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNAddTensor`                                           | ✅          | ❌      | ❓      |                          | 
+| `cuDNNAddTensor`                                           | ✅          | ✅      | ✅      |                          | 
 | `cuDNNCreateOpTensorDescriptor`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetOpTensorDescriptor`                               | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetOpTensorDescriptor`                               | ✅          | ❌      | ❓      |                          | 
@@ -501,7 +489,7 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNSetTensor`                                           | ✅          | ❌      | ❓      |                          | 
 | `cuDNNScaleTensor`                                         | ✅          | ❌      | ❓      |                          | 
 | `cuDNNCreateFilterDescriptor`                              | ✅          | ✅      | ✅      |                          | 
-| `cuDNNSetFilter4dDescriptor`                               | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetFilter4dDescriptor`                               | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetFilter4dDescriptor`                               | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetFilter4dDescriptor_v3`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetFilter4dDescriptor_v3`                            | ✅          | ❌      | ❓      |                          | 
@@ -517,43 +505,43 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNDestroyFilterDescriptor`                             | ✅          | ✅      | ✅      |                          | 
 | `cuDNNTransformFilter`                                     | ✅          | ❌      | ❓      |                          | 
 | `cuDNNReorderFilterAndBias`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateConvolutionDescriptor`                         | ✅          | ❌      | ❓      |                          | 
+| `cuDNNCreateConvolutionDescriptor`                         | ✅          | ✅      | ✅      |                          | 
 | `cuDNNSetConvolutionMathType`                              | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionMathType`                              | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetConvolutionGroupCount`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionGroupCount`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetConvolutionReorderType`                           | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionReorderType`                           | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetConvolution2dDescriptor`                          | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetConvolution2dDescriptor`                          | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetConvolution2dDescriptor`                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolution2dForwardOutputDim`                    | ✅          | ❌      | ❓      |                          | 
+| `cuDNNGetConvolution2dForwardOutputDim`                    | ✅          | ✅      | ✅      |                          | 
 | `cuDNNSetConvolutionNdDescriptor`                          | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionNdDescriptor`                          | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionNdForwardOutputDim`                    | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyConvolutionDescriptor`                        | ✅          | ❌      | ❓      |                          | 
+| `cuDNNDestroyConvolutionDescriptor`                        | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetConvolutionForwardAlgorithmMaxCount`              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindConvolutionForwardAlgorithm`                     | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindConvolutionForwardAlgorithmEx`                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionForwardAlgorithm`                      | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionForwardAlgorithm_v7`                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionForwardWorkspaceSize`                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNConvolutionForward`                                  | ✅          | ❌      | ❓      |                          | 
+| `cuDNNFindConvolutionForwardAlgorithm`                     | ✅          | ✅      | ✅      |                          | 
+| `cuDNNFindConvolutionForwardAlgorithmEx`                   | ✅          | ✅      | ❌      |                          | 
+| `cuDNNGetConvolutionForwardAlgorithm`                      | ✅          | ❌      | ❓      | Deprecated in v8, Use `cuDNNGetConvolutionForwardAlgorithm_v7` instead | 
+| `cuDNNGetConvolutionForwardAlgorithm_v7`                   | ✅          | ✅      | ❌      |                          | 
+| `cuDNNGetConvolutionForwardWorkspaceSize`                  | ✅          | ✅      | ✅      |                          | 
+| `cuDNNConvolutionForward`                                  | ✅          | ✅      | ✅      |                          | 
 | `cuDNNConvolutionBiasActivationForward`                    | ✅          | ❌      | ❓      |                          | 
 | `cuDNNConvolutionBackwardBias`                             | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetConvolutionBackwardFilterAlgorithmMaxCount`       | ✅          | ❌      | ❓      |                          | 
 | `cuDNNFindConvolutionBackwardFilterAlgorithm`              | ✅          | ❌      | ❓      |                          | 
 | `cuDNNFindConvolutionBackwardFilterAlgorithmEx`            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionBackwardFilterAlgorithm`               | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionBackwardFilterAlgorithm_v7`            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionBackwardFilterWorkspaceSize`           | ✅          | ❌      | ❓      |                          | 
-| `cuDNNConvolutionBackwardFilter`                           | ✅          | ❌      | ❓      |                          | 
+| `cuDNNGetConvolutionBackwardFilterAlgorithm`               | ✅          | ❌      | ❓      | Deprecated in v8, Use `cuDNNGetConvolutionBackwardFilterAlgorithm_v7` instead | 
+| `cuDNNGetConvolutionBackwardFilterAlgorithm_v7`            | ✅          | ✅      | ✅      |                          | 
+| `cuDNNGetConvolutionBackwardFilterWorkspaceSize`           | ✅          | ✅      | ✅      |                          | 
+| `cuDNNConvolutionBackwardFilter`                           | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetConvolutionBackwardDataAlgorithmMaxCount`         | ✅          | ❌      | ❓      |                          | 
 | `cuDNNFindConvolutionBackwardDataAlgorithm`                | ✅          | ❌      | ❓      |                          | 
 | `cuDNNFindConvolutionBackwardDataAlgorithmEx`              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionBackwardDataAlgorithm`                 | ✅          | ❌      | ❓      |                          | 
+| `cuDNNGetConvolutionBackwardDataAlgorithm`                 | ✅          | ❌      | ❓      | Deprecated in v8, Use `cuDNNGetConvolutionBackwardDataAlgorithm_v7` instead | 
 | `cuDNNGetConvolutionBackwardDataAlgorithm_v7`              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetConvolutionBackwardDataWorkspaceSize`             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNConvolutionBackwardData`                             | ✅          | ❌      | ❓      |                          | 
+| `cuDNNGetConvolutionBackwardDataWorkspaceSize`             | ✅          | ✅      | ✅      |                          | 
+| `cuDNNConvolutionBackwardData`                             | ✅          | ✅      | ✅      |                          | 
 | `cuDNNIm2Col`                                              | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSoftmaxForward`                                      | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSoftmaxBackward`                                     | ✅          | ✅      | ✅      |                          | 
@@ -566,13 +554,13 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNGetPooling2dForwardOutputDim`                        | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDestroyPoolingDescriptor`                            | ✅          | ✅      | ✅      |                          | 
 | `cuDNNPoolingForward`                                      | ✅          | ✅      | ✅      |                          | 
-| `cuDNNPoolingBackward`                                     | ✅          | ❌      | ❓      |                          | 
+| `cuDNNPoolingBackward`                                     | ✅          | ✅      | ✅      |                          | 
 | `cuDNNCreateActivationDescriptor`                          | ✅          | ✅      | ✅      |                          | 
 | `cuDNNSetActivationDescriptor`                             | ✅          | ✅      | ✅      |                          | 
 | `cuDNNGetActivationDescriptor`                             | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDestroyActivationDescriptor`                         | ✅          | ✅      | ✅      |                          | 
 | `cuDNNActivationForward`                                   | ✅          | ✅      | ✅      |                          | 
-| `cuDNNActivationBackward`                                  | ✅          | ❌      | ❓      |                          | 
+| `cuDNNActivationBackward`                                  | ✅          | ✅      | ✅      |                          | 
 | `cuDNNCreateLRNDescriptor`                                 | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetLRNDescriptor`                                    | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetLRNDescriptor`                                    | ✅          | ❌      | ❓      |                          | 
@@ -585,10 +573,10 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNGetBatchNormalizationForwardTrainingExWorkspaceSize` | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetBatchNormalizationBackwardExWorkspaceSize`        | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetBatchNormalizationTrainingExReserveSpaceSize`     | ✅          | ❌      | ❓      |                          | 
-| `cuDNNBatchNormalizationForwardTraining`                   | ✅          | ❌      | ❓      |                          | 
+| `cuDNNBatchNormalizationForwardTraining`                   | ✅          | ✅      | ❌      |                          | 
 | `cuDNNBatchNormalizationForwardTrainingEx`                 | ✅          | ❌      | ❓      |                          | 
 | `cuDNNBatchNormalizationForwardInference`                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNBatchNormalizationBackward`                          | ✅          | ❌      | ❓      |                          | 
+| `cuDNNBatchNormalizationBackward`                          | ✅          | ✅      | ❓      |                          | 
 | `cuDNNBatchNormalizationBackwardEx`                        | ✅          | ❌      | ❓      |                          | 
 | `cuDNNCreateSpatialTransformerDescriptor`                  | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetSpatialTransformerNdDescriptor`                   | ✅          | ❌      | ❓      |                          | 
@@ -597,62 +585,63 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNSpatialTfGridGeneratorBackward`                      | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSpatialTfSamplerForward`                             | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSpatialTfSamplerBackward`                            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateDropoutDescriptor`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyDropoutDescriptor`                            | ✅          | ❌      | ❓      |                          | 
+| `cuDNNCreateDropoutDescriptor`                             | ✅          | ✅      | ✅      |                          | 
+| `cuDNNDestroyDropoutDescriptor`                            | ✅          | ✅      | ✅      |                          | 
 | `cuDNNDropoutGetStatesSize`                                | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDropoutGetReserveSpaceSize`                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetDropoutDescriptor`                                | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetDropoutDescriptor`                                | ✅          | ✅      | ❌      |                          | 
 | `cuDNNRestoreDropoutDescriptor`                            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetDropoutDescriptor`                                | ✅          | ❌      | ❓      |                          | 
+| `cuDNNGetDropoutDescriptor`                                | ✅          | ✅      | ❌      |                          | 
 | `cuDNNDropoutForward`                                      | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDropoutBackward`                                     | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateRNNDescriptor`                                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyRNNDescriptor`                                | ✅          | ❌      | ❓      |                          | 
+| `cuDNNCreateRNNDescriptor`                                 | ✅          | ✅      | ✅      |                          | 
+| `cuDNNDestroyRNNDescriptor`                                | ✅          | ✅      | ✅      |                          | 
 | `cuDNNSetRNNDescriptor_v5`                                 | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetRNNDescriptor_v5`                                 | ❌          | ❌      | ❌      |                          | 
-| `cuDNNSetRNNDescriptor_v6`                                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNDescriptor_v6`                                 | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetRNNDescriptor_v6`                                 | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNBackwardData_v8` instead | 
+| `cuDNNGetRNNDescriptor_v6`                                 | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNGetRNNDescriptor_v8` instead | 
 | `cuDNNSetRNNDescriptor_v8`                                 | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetRNNDescriptor_v8`                                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNMatrixMathType`                                | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetRNNMatrixMathType`                                | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNSetRNNDescriptor_v8` instead | 
 | `cuDNNGetRNNMatrixMathType`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNBiasMode`                                      | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNBiasMode`                                      | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNSetClip`                                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNGetClip`                                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNProjectionLayers`                              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNProjectionLayers`                              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreatePersistentRNNPlan`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyPersistentRNNPlan`                            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetPersistentRNNPlan`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNWorkspaceSize`                                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNTrainingReserveSize`                           | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNParamsSize`                                    | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNLinLayerMatrixParams`                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNLinLayerBiasParams`                            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNForwardInference`                                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNForwardTraining`                                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNBackwardData`                                     | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNBackwardWeights`                                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNPaddingMode`                                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNPaddingMode`                                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateRNNDataDescriptor`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyRNNDataDescriptor`                            | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNDataDescriptor`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNDataDescriptor`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNForwardTrainingEx`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNForwardInferenceEx`                               | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNBackwardDataEx`                                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRNNBackwardWeightsEx`                                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetRNNAlgorithmDescriptor`                           | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNForwardInferenceAlgorithmMaxCount`             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindRNNForwardInferenceAlgorithmEx`                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNForwardTrainingAlgorithmMaxCount`              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindRNNForwardTrainingAlgorithmEx`                   | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNBackwardDataAlgorithmMaxCount`                 | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindRNNBackwardDataAlgorithmEx`                      | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetRNNBackwardWeightsAlgorithmMaxCount`              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNFindRNNBackwardWeightsAlgorithmEx`                   | ✅          | ❌      | ❓      |                          | 
+| `cuDNNSetRNNBiasMode`                                      | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNSetRNNDescriptor_v8` instead | 
+| `cuDNNGetRNNBiasMode`                                      | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNGetRNNDescriptor_v8` instead | 
+| `cuDNNRNNSetClip`                                          | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNSetClip_v9` instead | 
+| `cuDNNRNNGetClip`                                          | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNGetClip_v9` instead | 
+| `cuDNNSetRNNProjectionLayers`                              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNSetRNNDescriptor_v8` instead | 
+| `cuDNNGetRNNProjectionLayers`                              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNGetRNNDescriptor_v8` instead | 
+| `cuDNNCreatePersistentRNNPlan`                             | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnBuildRNNDynamic` instead | 
+| `cuDNNDestroyPersistentRNNPlan`                            | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnBuildRNNDynamic` instead | 
+| `cuDNNSetPersistentRNNPlan`                                | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnBuildRNNDynamic` instead | 
+| `cuDNNGetRNNWorkspaceSize`                                 | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use  `cudnnGetRNNTempSpaceSize` instead | 
+| `cuDNNGetRNNTrainingReserveSize`                           | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use  `cudnnGetRNNTempSpaceSize` instead | 
+| `cuDNNGetRNNParamsSize`                                    | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use  `cudnnGetRNNWeightSpaceSize` instead | 
+| `cuDNNGetRNNLinLayerMatrixParams`                          | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnGetRNNWeightParams` instead | 
+| `cuDNNGetRNNLinLayerBiasParams`                            | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnGetRNNWeightParams` instead | 
+| `cuDNNRNNForwardInference`                                 | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnRNNForward` instead | 
+| `cuDNNRNNForwardTraining`                                  | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnRNNForward` instead | 
+| `cuDNNRNNBackwardData`                                     | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNBackwardData_v8` instead | 
+| `cuDNNRNNBackwardData_v8`                                  | ❌          | ❌      | ❌      |                          |
+| `cuDNNRNNBackwardWeights`                                  | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNSetRNNPaddingMode`                                   | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNBackwardData_v8` instead | 
+| `cuDNNGetRNNPaddingMode`                                   | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNGetRNNDescriptor_v8` instead | 
+| `cuDNNCreateRNNDataDescriptor`                             | ✅          | ✅      | ✅      |                          | 
+| `cuDNNDestroyRNNDataDescriptor`                            | ✅          | ✅      | ✅      |                          | 
+| `cuDNNSetRNNDataDescriptor`                                | ✅          | ✅      | ✅      |                          | 
+| `cuDNNGetRNNDataDescriptor`                                | ✅          | ✅      | ✅      |                          | 
+| `cuDNNRNNForwardTrainingEx`                                | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnRNNForward` instead | 
+| `cuDNNRNNForwardInferenceEx`                               | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cudnnRNNForward` instead | 
+| `cuDNNRNNBackwardDataEx`                                   | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9, Use `cuDNNRNNBackwardData_v8` instead | 
+| `cuDNNRNNBackwardWeightsEx`                                | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNSetRNNAlgorithmDescriptor`                           | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetRNNForwardInferenceAlgorithmMaxCount`             | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNFindRNNForwardInferenceAlgorithmEx`                  | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetRNNForwardTrainingAlgorithmMaxCount`              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNFindRNNForwardTrainingAlgorithmEx`                   | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetRNNBackwardDataAlgorithmMaxCount`                 | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNFindRNNBackwardDataAlgorithmEx`                      | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetRNNBackwardWeightsAlgorithmMaxCount`              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNFindRNNBackwardWeightsAlgorithmEx`                   | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
 | `cuDNNCreateSeqDataDescriptor`                             | ✅          | ❌      | ❓      |                          | 
 | `cuDNNDestroySeqDataDescriptor`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetSeqDataDescriptor`                                | ✅          | ❌      | ❓      |                          | 
@@ -674,18 +663,18 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNDestroyCTCLossDescriptor`                            | ✅          | ❌      | ❓      |                          | 
 | `cuDNNCTCLoss`                                             | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetCTCLossWorkspaceSize`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateAlgorithmDescriptor`                           | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetAlgorithmDescriptor`                              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetAlgorithmDescriptor`                              | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCopyAlgorithmDescriptor`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyAlgorithmDescriptor`                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateAlgorithmPerformance`                          | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSetAlgorithmPerformance`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetAlgorithmPerformance`                             | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyAlgorithmPerformance`                         | ✅          | ❌      | ❓      |                          | 
-| `cuDNNGetAlgorithmSpaceSize`                               | ✅          | ❌      | ❓      |                          | 
-| `cuDNNSaveAlgorithm`                                       | ✅          | ❌      | ❓      |                          | 
-| `cuDNNRestoreAlgorithm`                                    | ✅          | ❌      | ❓      |                          | 
+| `cuDNNCreateAlgorithmDescriptor`                           | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNSetAlgorithmDescriptor`                              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetAlgorithmDescriptor`                              | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNCopyAlgorithmDescriptor`                             | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNDestroyAlgorithmDescriptor`                          | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNCreateAlgorithmPerformance`                          | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNSetAlgorithmPerformance`                             | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetAlgorithmPerformance`                             | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNDestroyAlgorithmPerformance`                         | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNGetAlgorithmSpaceSize`                               | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNSaveAlgorithm`                                       | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
+| `cuDNNRestoreAlgorithm`                                    | ✅          | ❌      | ❓      | Deprecated in v8, Removed in v9 | 
 | `cuDNNSetCallback`                                         | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetCallback`                                         | ✅          | ❌      | ❓      |                          | 
 | `cuDNNCreateFusedOpsConstParamPack`                        | ✅          | ❌      | ❓      |                          | 
@@ -696,22 +685,22 @@ cuFFT handle typedefs changed in CUDA 12.
 | `cuDNNDestroyFusedOpsVariantParamPack`                     | ✅          | ❌      | ❓      |                          | 
 | `cuDNNSetFusedOpsVariantParamPackAttribute`                | ✅          | ❌      | ❓      |                          | 
 | `cuDNNGetFusedOpsVariantParamPackAttribute`                | ✅          | ❌      | ❓      |                          | 
-| `cuDNNCreateFusedOpsPlan`                                  | ✅          | ❌      | ❓      |                          | 
-| `cuDNNDestroyFusedOpsPlan`                                 | ✅          | ❌      | ❓      |                          | 
+| `cuDNNCreateFusedOpsPlan`                                  | ✅          | ✅      | ✅      |                          | 
+| `cuDNNDestroyFusedOpsPlan`                                 | ✅          | ✅      | ✅      |                          | 
 | `cuDNNMakeFusedOpsPlan`                                    | ✅          | ❌      | ❓      |                          | 
 | `cuDNNFusedOpsExecute`                                     | ✅          | ❌      | ❓      |                          | 
 
 
 # cuSPARSE (-lcusparse)
 
-| Function                                  | Implemented | Tested | Working |          Notes           |
-| ----------------------------------------- | ----------- | ------ | ------- | -------------------------|
-| `cusparseCreate`                          | ✅          | ❌      | ❓      |                          | 
-| `cusparseDestroy`                         | ✅          | ❌      | ❓      |                          | 
-| `cusparseGetVersion`                      | ✅          | ❌      | ❓      |                          | 
-| `cusparseGetErrorString`                  | ✅          | ❌      | ❓      |                          | 
-| `cusparseSetStream`                       | ✅          | ❌      | ❓      |                          | 
-| `cusparseGetStream`                       | ✅          | ❌      | ❓      |                          | 
+| Function                                  | Implemented | Tested  | Working |          Notes           |
+| ----------------------------------------- | ----------- | ------- | ------- | -------------------------|
+| `cusparseCreate`                          | ✅          | ✅      | ✅      |                          | 
+| `cusparseDestroy`                         | ✅          | ✅      | ✅      |                          | 
+| `cusparseGetVersion`                      | ✅          | ✅      | ✅      |                          | 
+| `cusparseGetErrorString`                  | ✅          | ✅      | ✅      |                          | 
+| `cusparseSetStream`                       | ✅          | ✅      | ✅      |                          | 
+| `cusparseGetStream`                       | ✅          | ✅      | ✅      |                          | 
 | `cusparseXcsrgemm`                        | ❌          | ❌      | ❌      |                          | 
 | `cusparseXcsr2dense`                      | ❌          | ❌      | ❌      |                          | 
 | `cusparseXdense2csr`                      | ❌          | ❌      | ❌      |                          | 
@@ -722,17 +711,17 @@ cuFFT handle typedefs changed in CUDA 12.
 
 # cuSOLVER (-lcusolver)
 
-| Function                                  | Implemented | Tested | Working |          Notes           |
-| ----------------------------------------- | ----------- | ------ | ------- | -------------------------|
-| `cusolverDnCreate`                        | ✅          | ❌      | ❓      |                          |       
-| `cusolverDnDestroy`                       | ✅          | ❌      | ❓      |                          | 
-| `cusolverDnSetStream`                     | ✅          | ❌      | ❓      |                          | 
-| `cusolverDnGetStream`                     | ✅          | ❌      | ❓      |                          |
-| `cusolverDnSgetrf`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnDgetrf`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnSgetrs`                        | ❌          | ❌      | ❌      |                          |     
-| `cusolverDnDgetrs`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnSgesvd`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnDgesvd`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnSpotrf`                        | ❌          | ❌      | ❌      |                          |
-| `cusolverDnDpotrf`                        | ❌          | ❌      | ❌      |                          |
+| Function                                  | Implemented | Tested  | Working |          Notes           |
+| ----------------------------------------- | ----------- | ------- | ------- | -------------------------|
+| `cusolverDnCreate`                        | ✅          | ✅      | ✅       |                          |       
+| `cusolverDnDestroy`                       | ✅          | ✅      | ✅       |                          | 
+| `cusolverDnSetStream`                     | ✅          | ✅      | ✅       |                          | 
+| `cusolverDnGetStream`                     | ✅          | ✅      | ✅       |                          |
+| `cusolverDnSgetrf`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnDgetrf`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnSgetrs`                        | ❌          | ❌      | ❌       |                          |     
+| `cusolverDnDgetrs`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnSgesvd`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnDgesvd`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnSpotrf`                        | ❌          | ❌      | ❌       |                          |
+| `cusolverDnDpotrf`                        | ❌          | ❌      | ❌       |                          |

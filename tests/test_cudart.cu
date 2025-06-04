@@ -73,20 +73,76 @@ TEST(cudaRT, DeviceSynchronize) {
     CUDA_CHECK(cudaDeviceSynchronize());
 }
 
-// TEST(cudaRT, EventCreateRecordSynchronizeElapsedTime) {
-//     cudaEvent_t start, stop;
-//     CUDA_CHECK(cudaEventCreate(&start));
-//     CUDA_CHECK(cudaEventCreate(&stop));
+__global__ void simpleKernel(int* output) {
+    *output = 123;
+}
 
-//     CUDA_CHECK(cudaEventRecord(start));
-//     CUDA_CHECK(cudaEventRecord(stop));
+TEST(cudaRT, LaunchKernel) {
+    int* d_output;
+    CUDA_CHECK(cudaMalloc(&d_output, sizeof(int)));
+    CUDA_CHECK(cudaMemset(d_output, 0, sizeof(int)));
 
-//     CUDA_CHECK(cudaEventSynchronize(stop));
+    void* args[] = { &d_output };
 
-//     float elapsed_ms = 0;
-//     CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
-//     EXPECT_GE(elapsed_ms, 0.0f);
+    dim3 grid(1), block(1);
+    CUDA_CHECK(cudaLaunchKernel((const void*)simpleKernel,
+                                grid, block,
+                                args,
+                                0, nullptr));
 
-//     CUDA_CHECK(cudaEventDestroy(start));
-//     CUDA_CHECK(cudaEventDestroy(stop));
-// }
+    int h_output = 0;
+    CUDA_CHECK(cudaMemcpy(&h_output, d_output, sizeof(int), cudaMemcpyDeviceToHost));
+    ASSERT_EQ(h_output, 123);
+
+    CUDA_CHECK(cudaFree(d_output));
+}
+
+TEST(cudaRT, PushCallConfiguration) {
+    dim3 grid(1), block(1);
+    size_t shared = 0;
+    cudaStream_t stream = 0;
+    CUDA_CHECK(__cudaPushCallConfiguration(grid, block, shared, stream));
+}
+
+TEST(CudaRT, KernelLaunchWithTripletSyntax) {
+    int* d_out = nullptr;
+    int h_out = 0;
+
+    // Allocate memory on device
+    cudaError_t err = cudaMalloc(&d_out, sizeof(int));
+    ASSERT_EQ(err, cudaSuccess);
+
+    // Launch kernel with <<<>>> syntax
+    simpleKernel<<<1, 1>>>(d_out);
+
+    // Wait for kernel to complete
+    err = cudaDeviceSynchronize();
+    ASSERT_EQ(err, cudaSuccess);
+
+    // Copy result back to host
+    err = cudaMemcpy(&h_out, d_out, sizeof(int), cudaMemcpyDeviceToHost);
+    ASSERT_EQ(err, cudaSuccess);
+
+    // Verify kernel result
+    ASSERT_EQ(h_out, 123);
+
+    cudaFree(d_out);
+}
+
+TEST(cudaRT, EventCreateRecordSynchronizeElapsedTimeDestroy) {
+    cudaEvent_t start, stop;
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
+
+    CUDA_CHECK(cudaEventRecord(start));
+    CUDA_CHECK(cudaEventRecord(stop));
+
+    CUDA_CHECK(cudaEventSynchronize(stop));
+
+    float elapsed_ms = 0;
+    CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
+    ASSERT_GT(elapsed_ms, 0.0f);
+
+    CUDA_CHECK(cudaEventDestroy(start));
+    CUDA_CHECK(cudaEventDestroy(stop));
+}
