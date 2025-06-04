@@ -42,13 +42,13 @@ RUN git clone https://github.com/google/googletest.git /opt/googletest && \
     make && make install
 
 # Clone and build GVirtuS
-RUN git clone --branch aligment_12.2 https://github.com/xiaoyuluoit97/GVirtuS.git && \
-    cd GVirtuS && \
-    mkdir -p build && \
-    cd build && \
-    cmake .. && \
-    make && \
-    make install
+# RUN git clone --branch aligment_12.2 https://github.com/xiaoyuluoit97/GVirtuS.git && \
+#     cd GVirtuS && \
+#     mkdir -p build && \
+#     cd build && \
+#     cmake .. && \
+#     make && \
+#     make install
 
 ENV PATH="$GVIRTUS_HOME/bin:$PATH"
 ENV LD_LIBRARY_PATH="$GVIRTUS_HOME/lib:$LD_LIBRARY_PATH"
