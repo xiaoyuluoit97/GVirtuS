@@ -273,7 +273,7 @@ extern "C" __host__ int __cudaSynchronizeThreads(void **x, void *y) {
 // }
 
 #if CUDA_VERSION >= 9020
-extern "C" __host__ __device__ unsigned CUDARTAPI __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedMem = 0, cudaStream_t *stream) {
+extern "C" __host__ __device__ unsigned CUDARTAPI __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedMem = 0, cudaStream_t stream) {
     CudaRtFrontend::Prepare();
     CudaRtFrontend::AddVariableForArguments(gridDim);
     CudaRtFrontend::AddVariableForArguments(blockDim);
