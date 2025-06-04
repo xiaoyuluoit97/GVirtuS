@@ -217,7 +217,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnGetTensorSizeInBytes(const cudnnTensor
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
     CudnnFrontend::Prepare();
 
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int) tensorDesc);
+    CudnnFrontend::AddDevicePointerForArguments(tensorDesc);
     CudnnFrontend::Execute("cudnnDestroyTensorDescriptor");
     return CudnnFrontend::GetExitCode();
 }
@@ -301,7 +301,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnGetTensorTransformDescriptor(cudnnTens
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescriptor_t transformDesc) {
     CudnnFrontend::Prepare();
 
-    CudnnFrontend::AddVariableForArguments<long long int >((long long int)transformDesc);
+    CudnnFrontend::AddDevicePointerForArguments(transformDesc);
 
     CudnnFrontend::Execute("cudnnDestroyTensorTransformDescriptor");
  
@@ -967,7 +967,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnGetFilterSizeInBytes(const cudnnFilter
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
     CudnnFrontend::Prepare();
 
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int) filterDesc);
+    CudnnFrontend::AddDevicePointerForArguments(filterDesc);
     CudnnFrontend::Execute("cudnnDestroyFilterDescriptor");
     return CudnnFrontend::GetExitCode();
 }
@@ -1266,7 +1266,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyConvolutionDescriptor(cudnnConv
 
     CudnnFrontend::Prepare();
    
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)convDesc);
+    CudnnFrontend::AddDevicePointerForArguments(convDesc);
 
     CudnnFrontend::Execute("cudnnDestroyConvolutionDescriptor");
 
@@ -2186,7 +2186,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyPoolingDescriptor(cudnnPoolingD
 
     CudnnFrontend::Prepare();
     
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)poolingDesc);
+    CudnnFrontend::AddDevicePointerForArguments(poolingDesc);
 
     CudnnFrontend::Execute("cudnnDestroyPoolingDescriptor");
    
@@ -2302,7 +2302,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnGetActivationDescriptor(const cudnnAct
 
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t activationDesc) {
     CudnnFrontend::Prepare();
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)activationDesc);
+    CudnnFrontend::AddDevicePointerForArguments(activationDesc);
     CudnnFrontend::Execute("cudnnDestroyActivationDescriptor");
     return CudnnFrontend::GetExitCode();
 }
@@ -2430,7 +2430,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyLRNDescriptor(cudnnLRNDescripto
 
     CudnnFrontend::Prepare();
 
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)lrnDesc);
+    CudnnFrontend::AddDevicePointerForArguments(lrnDesc);
    
     CudnnFrontend::Execute("cudnnDestroyLRNDescriptor");
    
@@ -3092,7 +3092,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyDropoutDescriptor(cudnnDropoutD
 
   CudnnFrontend::Prepare();
 
-  CudnnFrontend::AddVariableForArguments<long long int>((long long int)dropoutDesc);
+  CudnnFrontend::AddDevicePointerForArguments(dropoutDesc);
 
   CudnnFrontend::Execute("cudnnDestroyDropoutDescriptor");
 
@@ -3258,7 +3258,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyRNNDescriptor(cudnnRNNDescripto
    
    CudnnFrontend::Prepare();
 
-   CudnnFrontend::AddVariableForArguments<long long int>((long long int)rnnDesc);
+   CudnnFrontend::AddDevicePointerForArguments(rnnDesc);
 
    CudnnFrontend::Execute("cudnnDestroyRNNDescriptor");
 
@@ -4543,7 +4543,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnCreateRNNDataDescriptor(cudnnRNNDataDe
  
 extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t rnnDataDesc) {
     CudnnFrontend::Prepare();
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)rnnDataDesc);
+    CudnnFrontend::AddDevicePointerForArguments(rnnDataDesc);
     CudnnFrontend::Execute("cudnnDestroyRNNDataDescriptor");
     return CudnnFrontend::GetExitCode();
 }
@@ -5527,7 +5527,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnDestroyFusedOpsPlan(cudnnFusedOpsPlan_
 
    CudnnFrontend::Prepare();
 
-   CudnnFrontend::AddVariableForArguments<long long int>((long long int)plan);
+   CudnnFrontend::AddDevicePointerForArguments(plan);
 
    CudnnFrontend::Execute("cudnnDestroyFusedOpsPlan");
 

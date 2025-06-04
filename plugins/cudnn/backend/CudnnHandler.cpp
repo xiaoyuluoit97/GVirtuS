@@ -902,7 +902,7 @@ CUDNN_ROUTINE_HANDLER(GetConvolutionGroupCount) {
 
 CUDNN_ROUTINE_HANDLER(DestroyConvolutionDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("ConvolutionBackwardBias"));
-    cudnnConvolutionDescriptor_t convDesc = (cudnnConvolutionDescriptor_t)in->Get<long long int>();
+    cudnnConvolutionDescriptor_t convDesc = in->Get<cudnnConvolutionDescriptor_t>();
 
     cudnnStatus_t cs = cudnnDestroyConvolutionDescriptor(convDesc);
 
@@ -1458,7 +1458,7 @@ CUDNN_ROUTINE_HANDLER(GetTensorSizeInBytes) {
 CUDNN_ROUTINE_HANDLER(DestroyTensorDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyTensorDescriptor"));
 
-    cudnnTensorDescriptor_t tensorDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
+    cudnnTensorDescriptor_t tensorDesc = in->Get<cudnnTensorDescriptor_t>();
     cudnnStatus_t cs = cudnnDestroyTensorDescriptor(tensorDesc);
     
     //LOG4CPLUS_DEBUG(logger, "DestroyTensorDescriptor Executed");
@@ -1568,7 +1568,7 @@ CUDNN_ROUTINE_HANDLER(GetTensorTransformDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyTensorTransformDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyTensorTransformDescriptor"));
     
-    cudnnTensorTransformDescriptor_t transformDesc = (cudnnTensorTransformDescriptor_t)in->Get<long long int>();
+    cudnnTensorTransformDescriptor_t transformDesc = in->Get<cudnnTensorTransformDescriptor_t>();
     
     cudnnStatus_t cs = cudnnDestroyTensorTransformDescriptor(transformDesc);
     
@@ -2351,7 +2351,7 @@ CUDNN_ROUTINE_HANDLER(GetFilterSizeInBytes) {
 CUDNN_ROUTINE_HANDLER(DestroyFilterDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestoryFilterDescriptor"));
 
-    cudnnFilterDescriptor_t filterDesc = (cudnnFilterDescriptor_t)in->Get<long long int>();
+    cudnnFilterDescriptor_t filterDesc = in->Get<cudnnFilterDescriptor_t>();
 
     cudnnStatus_t cs = cudnnDestroyFilterDescriptor(filterDesc);
     
@@ -2873,7 +2873,7 @@ CUDNN_ROUTINE_HANDLER(GetPooling2dForwardOutputDim) {
 CUDNN_ROUTINE_HANDLER(DestroyPoolingDescriptor) {
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyPoolingDescriptor"));
    
-   cudnnPoolingDescriptor_t poolingDesc = (cudnnPoolingDescriptor_t)in->Get<long long int>();
+   cudnnPoolingDescriptor_t poolingDesc = in->Get<cudnnPoolingDescriptor_t>();
 
    cudnnStatus_t cs = cudnnDestroyPoolingDescriptor(poolingDesc);
 
@@ -3009,7 +3009,7 @@ CUDNN_ROUTINE_HANDLER(GetActivationDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyActivationDescriptor) {
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyActivationDescriptor"));
    
-   cudnnActivationDescriptor_t activationDesc = (cudnnActivationDescriptor_t)in->Get<long long int>();
+   cudnnActivationDescriptor_t activationDesc = in->Get<cudnnActivationDescriptor_t>();
    
    cudnnStatus_t cs = cudnnDestroyActivationDescriptor(activationDesc);
 
@@ -3142,7 +3142,7 @@ CUDNN_ROUTINE_HANDLER(GetLRNDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyLRNDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyLRNDescriptor"));
 
-    cudnnLRNDescriptor_t lrnDesc = (cudnnLRNDescriptor_t)in->Get<long long int>();
+    cudnnLRNDescriptor_t lrnDesc = in->Get<cudnnLRNDescriptor_t>();
 
     cudnnStatus_t cs = cudnnDestroyLRNDescriptor(lrnDesc);
 
@@ -3781,7 +3781,7 @@ CUDNN_ROUTINE_HANDLER(CreateDropoutDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyDropoutDescriptor) {
    Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyDropoutDescriptor"));
 
-   cudnnDropoutDescriptor_t dropoutDesc = (cudnnDropoutDescriptor_t)in->Get<long long int>();
+   cudnnDropoutDescriptor_t dropoutDesc = in->Get<cudnnDropoutDescriptor_t>();
    
    cudnnStatus_t cs = cudnnDestroyDropoutDescriptor(dropoutDesc);
 
@@ -3987,7 +3987,7 @@ CUDNN_ROUTINE_HANDLER(CreateRNNDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyRNNDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyRNNDescriptor"));
 
-    cudnnRNNDescriptor_t rnnDesc = (cudnnRNNDescriptor_t)in->Get<long long int>();
+    cudnnRNNDescriptor_t rnnDesc = in->Get<cudnnRNNDescriptor_t>();
 
     cudnnStatus_t cs = cudnnDestroyRNNDescriptor(rnnDesc);
 
@@ -5474,7 +5474,7 @@ CUDNN_ROUTINE_HANDLER(CreateRNNDataDescriptor) {
 CUDNN_ROUTINE_HANDLER(DestroyRNNDataDescriptor) {
      Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("DestroyRNNDataDescriptor"));
 
-     cudnnRNNDataDescriptor_t rnnDataDesc = (cudnnRNNDataDescriptor_t)in->Get<long long int>();
+     cudnnRNNDataDescriptor_t rnnDataDesc = in->Get<cudnnRNNDataDescriptor_t>();
      
      cudnnStatus_t cs = cudnnDestroyRNNDataDescriptor(rnnDataDesc);
      
