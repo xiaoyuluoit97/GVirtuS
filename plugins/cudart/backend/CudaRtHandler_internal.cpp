@@ -87,7 +87,7 @@ extern "C" {
                                                           cudaStream_t *stream);
   __host__ __device__ unsigned CUDARTAPI __cudaPushCallConfiguration(dim3 gridDim, 
                                                                             dim3 blockDim, 
-                                                                            size_t sharedMem = 0, 
+                                                                            size_t sharedMem, 
                                                                             cudaStream_t stream);
   // void __cudaRegisterTexture(void **fatCubinHandle,
   //                            const cudaTextureObject_t*hostVar,
