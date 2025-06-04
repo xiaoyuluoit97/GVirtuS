@@ -72,7 +72,7 @@ foreach(TEST_SRC ${TEST_SOURCES})
         cublas
         cufft
         cudnn
-        cudnn_adv # This includes RNNs, CTC loss, and multihead attention functions
+        #cudnn_adv # This includes RNNs, CTC loss, and multihead attention functions
         cusolver
         cusparse
     )
