@@ -1323,7 +1323,7 @@ CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptor) {
 CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptorEx) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetTensor4dDescriptor"));
 
-    cudnnTensorDescriptor_t tensorDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
+    cudnnTensorDescriptor_t tensorDesc = in->Get<cudnnTensorDescriptor_t>();
     cudnnDataType_t dataType = in->Get<cudnnDataType_t>();
 
     int n = in->Get<int>();
@@ -1347,7 +1347,7 @@ CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptorEx) {
     }
     
     LOG4CPLUS_DEBUG(logger, "cudnnSetTensor4dDescriptor Executed");
-    //cout << "DEBUG - cudnnSetTensor4dDescriptor Executed"<<endl;
+    registerDescriptorType(tensorDesc, dataType);
     return std::make_shared<Result>(cs);
 }
 

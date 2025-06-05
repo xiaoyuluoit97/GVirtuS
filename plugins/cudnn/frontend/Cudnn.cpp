@@ -115,7 +115,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetTensor4dDescriptorEx( cudnnTensorDe
                               int wStride ) {
     CudnnFrontend::Prepare();
 
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)tensorDesc);
+    CudnnFrontend::AddDevicePointerForArguments(tensorDesc);
     CudnnFrontend::AddVariableForArguments<cudnnDataType_t>(dataType);
     CudnnFrontend::AddVariableForArguments<int>(n);
     CudnnFrontend::AddVariableForArguments<int>(c);
@@ -130,6 +130,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetTensor4dDescriptorEx( cudnnTensorDe
     CudnnFrontend::Execute("SetTensor4dDescriptorEx");
     if (CudnnFrontend::Success()) {
         tensorDesc = CudnnFrontend::GetOutputVariable<cudnnTensorDescriptor_t>();
+        registerDescriptorType(tensorDesc, dataType);
     }
     return CudnnFrontend::GetExitCode();
 }
