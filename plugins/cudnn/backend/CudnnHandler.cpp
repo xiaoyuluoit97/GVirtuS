@@ -35,6 +35,27 @@ using namespace log4cplus;
 
 std::map<string, CudnnHandler::CudnnRoutineHandler> * CudnnHandler::mspHandlers = NULL;
 
+static std::mutex desc_type_mutex;
+static std::unordered_map<void*, bool> desc_is_float_map;
+
+// Helper Functions
+
+// Generic setter (used when you create a descriptor)
+void registerDescriptorType(void* desc, const cudnnDataType_t dataType) {
+    std::lock_guard<std::mutex> lock(desc_type_mutex);
+    desc_is_float_map[desc] = (dataType != CUDNN_DATA_DOUBLE);
+}
+
+// Generic getter for descriptor type
+bool isFloatDescriptor(const void* desc) {
+    std::lock_guard<std::mutex> lock(desc_type_mutex);
+    auto it = desc_is_float_map.find(const_cast<void*>(desc));
+    if (it != desc_is_float_map.end()) {
+        return it->second;
+    }
+    return true; // Default if unknown, assume float
+}
+
 extern "C" std::shared_ptr<CudnnHandler> create_t() {
     return std::make_shared<CudnnHandler>();
 }
@@ -1275,7 +1296,7 @@ CUDNN_ROUTINE_HANDLER(CreateTensorDescriptor) {
 
 CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptor) {
     Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("SetTensor4dDescriptor"));
-    cudnnTensorDescriptor_t tensorDesc = (cudnnTensorDescriptor_t)in->Get<long long int>();
+    cudnnTensorDescriptor_t tensorDesc = in->Get<cudnnTensorDescriptor_t>();
     cudnnTensorFormat_t format = in->Get<cudnnTensorFormat_t>();
     cudnnDataType_t dataType = in->Get<cudnnDataType_t>();                                                                                          
     int n = in->Get<int>();
@@ -1295,6 +1316,7 @@ CUDNN_ROUTINE_HANDLER(SetTensor4dDescriptor) {
          return std::make_shared<Result>(cs);
     }                      
     //LOG4CPLUS_DEBUG(logger,"cudnnSetTensor4dDescriptor Executed");
+    registerDescriptorType(tensorDesc, dataType);
     return std::make_shared<Result>(cs,out);
 }
 

@@ -26,10 +26,33 @@
 #include <iostream>
 #include <cstdio>
 #include <string>
+#include <mutex>
+#include <unordered_map>
 
 #include "CudnnFrontend.h"
 
 using namespace std;
+
+static std::mutex desc_type_mutex;
+static std::unordered_map<void*, bool> desc_is_float_map;
+
+// Helper Functions
+
+// Generic setter (used when you create a descriptor)
+void registerDescriptorType(void* desc, const cudnnDataType_t dataType) {
+    std::lock_guard<std::mutex> lock(desc_type_mutex);
+    desc_is_float_map[desc] = (dataType != CUDNN_DATA_DOUBLE);
+}
+
+// Generic getter for descriptor type
+bool isFloatDescriptor(const void* desc) {
+    std::lock_guard<std::mutex> lock(desc_type_mutex);
+    auto it = desc_is_float_map.find(const_cast<void*>(desc));
+    if (it != desc_is_float_map.end()) {
+        return it->second;
+    }
+    return true; // Default if unknown, assume float
+}
 
 extern "C" size_t CUDNNWINAPI cudnnGetVersion() {
     CudnnFrontend::Prepare();
@@ -64,7 +87,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetTensor4dDescriptor( cudnnTensorDesc
 
     //printf("[cudnnSetTensor4dDescriptor] N, C, H, W: %d %d %d %d\n", n, c, h, w);
 
-    CudnnFrontend::AddVariableForArguments<long long int>((long long int)tensorDesc);
+    CudnnFrontend::AddDevicePointerForArguments(tensorDesc);
     CudnnFrontend::AddVariableForArguments<cudnnTensorFormat_t>(format);
     CudnnFrontend::AddVariableForArguments<cudnnDataType_t>(dataType);
     CudnnFrontend::AddVariableForArguments<int>(n);
@@ -75,6 +98,7 @@ extern "C" cudnnStatus_t CUDNNWINAPI cudnnSetTensor4dDescriptor( cudnnTensorDesc
     CudnnFrontend::Execute("cudnnSetTensor4dDescriptor");
     if (CudnnFrontend::Success()) {
         tensorDesc = CudnnFrontend::GetOutputVariable<cudnnTensorDescriptor_t>();
+        registerDescriptorType(tensorDesc, dataType);
     }
     return CudnnFrontend::GetExitCode();
 }
