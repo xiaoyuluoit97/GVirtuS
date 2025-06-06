@@ -103,9 +103,14 @@ Problem
 
 aligment_new is the current working branch. It takes cues from Theo’s CUDA 12.6 implementation and the code is more elegant.
 
-(Undolved) cudnnSetTensor4dDescriptor has some problem in cudnn8. It works well in cudnn9
+(Unsolved) cudnnSetTensor4dDescriptor has some problem in cudnn8 with exit code 3. It works well in cudnn9 in unit test
 
 DEBUG - Called cudnnSetTensor4dDescriptor
 DEBUG - ✓ - [Process 78744]: Requested 'cudnnSetTensor4dDescriptor' routine.
 DEBUG - ✓ - [Process 78744]: Exit Code '3'.
 
+(Unsolved) when intergrate with opencv in cudnn9, cudnnSetTensor4dDescriptor has error with exit code 2000
+
+DEBUG - Called cudnnSetTensor4dDescriptor
+DEBUG - ✓ - [Process 27732]: Requested 'cudnnSetTensor4dDescriptor' routine.
+DEBUG - ✓ - [Process 27732]: Exit Code '2000'.
