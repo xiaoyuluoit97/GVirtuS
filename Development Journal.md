@@ -101,4 +101,11 @@ Problem
 
 (Solved) There is error if we define CUDA Kernel function like __global__ void at the beginning for cuda 12.6.
 
-aligment_12.2 is the current working branch. It takes cues from Theo’s CUDA 12.6 implementation and the code is more elegant.
+aligment_new is the current working branch. It takes cues from Theo’s CUDA 12.6 implementation and the code is more elegant.
+
+(Undolved) cudnnSetTensor4dDescriptor has some problem in cudnn8. It works well in cudnn9
+
+DEBUG - Called cudnnSetTensor4dDescriptor
+DEBUG - ✓ - [Process 78744]: Requested 'cudnnSetTensor4dDescriptor' routine.
+DEBUG - ✓ - [Process 78744]: Exit Code '3'.
+
