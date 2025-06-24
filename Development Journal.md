@@ -127,3 +127,16 @@ dims: 1, 0, 0, 0
 Data type value: 0
 
 solution> after correctly fixed the function cudnnGetConvolutionNdForwardOutputDim
+
+**Date:** 23-06-2025 - 27-06-2025
+(unsolved) when opencv call function cudnnConvolutionForward, it has error 
+terminate called after throwing an instance of 'cv::dnn::cuda4dnn::csl::cudnn::cuDNNException'
+  what():  OpenCV(4.9.0) /root/opencv/modules/dnn/src/layers/../cuda4dnn/primitives/../csl/cudnn/convolution.hpp:458: error: (-217:Gpu API call) CUDNN_STATUS_BAD_PARAM in function 'convolve'
+
+  i check the input variable, the dimension is correct. But the pointer is null.
+  
+  the correct input
+  inputPtr: 0xb05f90000, filterPtr: 0xb08200000, outputPtr: 0xb05d90000, workspacePtr: 0xb08400000 (device)
+
+  the gvirtus input 
+  inputPtr: 0, filterPtr: 0, outputPtr: 0, workspacePtr: 0 (device)
