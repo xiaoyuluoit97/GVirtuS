@@ -109,7 +109,7 @@ DEBUG - Called cudnnSetTensor4dDescriptor
 DEBUG - ✓ - [Process 78744]: Requested 'cudnnSetTensor4dDescriptor' routine.
 DEBUG - ✓ - [Process 78744]: Exit Code '3'.
 
-(Unsolved) when intergrate with opencv in cudnn9, cudnnSetTensor4dDescriptor has error with exit code 2000
+(Solved) when intergrate with opencv in cudnn9, cudnnSetTensor4dDescriptor has error with exit code 2000
 terminate called after throwing an instance of 'cv::dnn::cuda4dnn::csl::cudnn::cuDNNException'
   what():  OpenCV(4.9.0) /root/opencv/modules/dnn/src/layers/../cuda4dnn/csl/cudnn/cudnn.hpp:241: error: (-217:Gpu API call) CUDNN_STATUS_BAD_PARAM in function 'constructor'
 the problem is caused by previous function
@@ -125,3 +125,5 @@ dims: 1, 3, 640, 640
 Data type value: 0
 dims: 1, 0, 0, 0
 Data type value: 0
+
+solution> after correctly fixed the function cudnnGetConvolutionNdForwardOutputDim
