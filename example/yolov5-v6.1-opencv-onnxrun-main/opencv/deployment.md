@@ -98,8 +98,8 @@ make install
 ldconfig
 ```
 
-# how opencv link to GVirtuS
-Please check the frontend script in this folder and use g++ to compile it. Test this yolo example first. It should work. The result would be like the backend successfully prints several callings of cuda functions and stuck somewhere, because we did not solve GVirtuS-OpenCV yet.
+# how opencv links to GVirtuS
+Please check the frontend script in this folder and use g++ to compile it. Test this yolo example first. It should work. The result would be like the backend successfully prints several callings of cuda functions and gets stuck somewhere, because we did not solve GVirtuS-OpenCV completely yet.
 
 g++ -o my_program test1.cpp -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_highgui
 
