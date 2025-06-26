@@ -20,13 +20,31 @@ cd ~/opencv
 mkdir build
 cd build
 
+
 nano /root/opencv/modules/dnn/src/layers/recurrent_layers.cpp
+add these two comments at begining and end of the file
 #if 0
 #endif
+
+
 nano /root/opencv/modules/dnn/src/init.cpp
+add comment of these two lines (not necessary for cudnn8)
 // CV_DNN_REGISTER_LAYER_CLASS(LSTM,           LSTMLayer);
 // CV_DNN_REGISTER_LAYER_CLASS(GRU,            GRULayer);
 
+nano /root/opencv/modules/dnn/src/cuda4dnn/csl/error.hpp
+comment throw  CUDAException, add {} for if 
+
+nano /root/opencv/modules/dnn/src/cuda4dnn/init.hpp
+getDeviceCount() 
+getDevice() 
+isDeviceCompatible()
+
+nano /root/opencv/modules/dnn/src/cuda4dnn/csl/cublas.hpp
+comment throw cuBLASException, add {} for if 
+
+nano /root/opencv/modules/core/include/opencv2/core/base.hpp
+line 385 #define CV_Assert( expr ) do { (void)(expr); } while (0)
 
 cmake -D CMAKE_BUILD_TYPE=Release \
       -D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -58,24 +76,9 @@ ldconfig
 
 g++ -o my_program test1.cpp -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_highgui
 
-
 g++ main.cpp \
     -I/usr/local/include/opencv4 \
     -L/usr/local/lib \
     -lopencv_core -lopencv_dnn -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui \
     -o sample \
    -lcublas -lcudnn
-
-nano /root/opencv/modules/dnn/src/cuda4dnn/csl/error.hpp
-comment throw  CUDAException, if 加{}
-
-nano /root/opencv/modules/dnn/src/cuda4dnn/init.hpp
-getDeviceCount() 
-getDevice() 
-isDeviceCompatible()
-
-nano /root/opencv/modules/dnn/src/cuda4dnn/csl/cublas.hpp
-comment throw  cuBLASException, if 加{}
-
-nano /root/opencv/modules/core/include/opencv2/core/base.hpp
-line 385 #define CV_Assert( expr ) do { (void)(expr); } while (0)
