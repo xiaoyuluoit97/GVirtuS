@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GVIRTUS_HOME=/home/GVirtuS
@@ -9,6 +9,7 @@ RUN mkdir -p $GVIRTUS_HOME && \
 
 WORKDIR $GVIRTUS_HOME
 
+# Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     g++ \
@@ -19,30 +20,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libosmesa-dev \
     git \
     curl \
+    cmake \
     autotools-dev \
     automake \
     libtool \
     liblog4cplus-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgtest-dev \
+    nano \
     wget \
-    build-essential \
     libssl-dev \
-    && apt-get purge -y cmake \
-    && apt-get clean \
-    && wget https://cmake.org/files/v3.17/cmake-3.17.1-Linux-x86_64.tar.gz \
-    && tar zxvf cmake-3.17.1-Linux-x86_64.tar.gz \
-    && rm -f cmake-3.17.1-Linux-x86_64.tar.gz \
-    && mv cmake-3.17.1-Linux-x86_64 /opt/cmake-3.17.1 \
-    && ln -sf /opt/cmake-3.17.1/bin/* /usr/bin/ 
+    rdma-core \
+    librdmacm-dev \
+    libibverbs-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y rdma-core librdmacm-dev libibverbs-dev
+# Install gtest properly with CMake targets
+RUN git clone https://github.com/google/googletest.git /opt/googletest && \
+    cd /opt/googletest && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && make install
 
-RUN git clone --branch gvirtus-cuda-12 https://github.com/xiaoyuluoit97/GVirtuS.git
-
-RUN cd GVirtuS && \
+# Clone and build GVirtuS
+RUN git clone --branch aligment_12.2 https://github.com/xiaoyuluoit97/GVirtuS.git && \
+    cd GVirtuS && \
     mkdir -p build && \
     cd build && \
     cmake .. && \
