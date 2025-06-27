@@ -42,7 +42,7 @@ RUN git clone https://github.com/google/googletest.git /opt/googletest && \
     make && make install
 
 # Clone and build GVirtuS
-RUN git clone --branch aligment_12.2 https://github.com/xiaoyuluoit97/GVirtuS.git && \
+RUN git clone --branch aligment_new https://github.com/xiaoyuluoit97/GVirtuS.git && \
     cd GVirtuS && \
     mkdir -p build && \
     cd build && \
