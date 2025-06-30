@@ -43,6 +43,8 @@ nano /root/opencv/modules/dnn/src/init.cpp
 // CV_DNN_REGISTER_LAYER_CLASS(GRU,            GRULayer);
 ```
 
+## modify other functions
+
 comment throw CUDAException and add {} behind 'if'
 
 nano /root/opencv/modules/dnn/src/cuda4dnn/csl/error.hpp
@@ -65,6 +67,9 @@ line 385 add
 ```
 #define CV_Assert( expr ) do { (void)(expr); } while (0)
 ```
+## or 
+use this repo: https://github.com/Wenrui-Yu/opencv
+
 ## installation 
 
 modify CUDA_ARCH_BIN="8.9" based on different type of GPU
@@ -99,17 +104,17 @@ ldconfig
 ```
 
 # how opencv links to GVirtuS
-Please check the frontend script in this folder and use g++ to compile it. Test this yolo example first. It should work. The result would be like the backend successfully prints several callings of cuda functions and gets stuck somewhere, because we did not solve GVirtuS-OpenCV completely yet.
+The result would be like the backend successfully prints several callings of cuda functions and gets stuck somewhere, because we did not solve GVirtuS-OpenCV completely yet.
 
 ```
 export GVIRTUS_HOME=/home/GVirtuS
 export EXTRA_NVCCFLAGS="--cudart=shared"
 export GVIRTUS_LOGLEVEL=10000
-export LD_LIBRARY_PATH=/home/GVirtuS/lib/frontend:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${GVIRTUS_HOME}/lib:${GVIRTUS_HOME}/lib/frontend:${LD_LIBRARY_PATH}
 
-#nvcc main.cpp -o sample `pkg-config --cflags --libs opencv4`  -lcublas -lcudnn
-
-g++ main.cpp    -I/usr/local/include/opencv4     -L/usr/local/lib      -lopencv_core -lopencv_dnn -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui    -lcublas -lcudnn  -lcudart -o sample
+nvcc main.cpp -o sample -L ${GVIRTUS_HOME}/lib/frontend -L ${GVIRTUS_HOME}/lib/ `pkg-config --cflags --libs opencv4` -lcuda -lcublas -lcudnn -lcudart
+#nvcc main.cpp -o sample `pkg-config --cflags --libs opencv4` -lcuda -lcublas -lcudnn -lcudart
+#g++ main.cpp    -I/usr/local/include/opencv4     -L/usr/local/lib      -lopencv_core -lopencv_dnn -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui    -lcublas -lcudnn -o sample
 
 ldd sample
 
