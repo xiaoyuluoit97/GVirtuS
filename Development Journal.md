@@ -140,3 +140,9 @@ terminate called after throwing an instance of 'cv::dnn::cuda4dnn::csl::cudnn::c
 
   the gvirtus input 
   inputPtr: 0, filterPtr: 0, outputPtr: 0, workspacePtr: 0 (device)
+
+**Date:** 30-06-2025 - 04-07-2025
+the problem might be caused by the cudart library.
+
+There is no dynamic link to cudart in opencv. It might use static library, or use libcuda to allocate the memory? 
+![image](https://github.com/user-attachments/assets/d000bfdd-0b04-412c-901e-bbb235621c9f)
