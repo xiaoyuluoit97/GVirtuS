@@ -144,7 +144,7 @@ terminate called after throwing an instance of 'cv::dnn::cuda4dnn::csl::cudnn::c
 **Date:** 30-06-2025 - 04-07-2025
 the problem might be caused by the cuda driver library. because the frontend test environment does not have GPU and does not find the cuda driver
 
-There is no dynamic link to cudart in opencv. It might use static library, or use libcuda to allocate the memory? 
+There is no dynamic link to cudart in opencv. It might use static library? 
 ![image](https://github.com/user-attachments/assets/d000bfdd-0b04-412c-901e-bbb235621c9f)
 
 When I open 2 terminal of backend, it can call the functions in cuda driver 
@@ -155,3 +155,10 @@ DEBUG - Init executed with flags: 0
 
 terminate called after throwing an instance of 'cv::dnn::cuda4dnn::csl::CUDAException'
   what():  OpenCV(4.9.0) /root/opencv/modules/dnn/src/cuda4dnn/csl/memory.hpp:54: error: (-217:Gpu API call) API call is not supported in the installed CUDA driver in function 'ManagedPtr'
+
+opencv cannot excute cudaMalloc, cudaFree. There seems to have some problem of calling cudart library.
+
+the result of use lsof (without and with gvirtus)
+![image](https://github.com/user-attachments/assets/8b2a3cbb-78be-42c7-89e2-ac6f1aeda80a)
+![image](https://github.com/user-attachments/assets/f239c497-68db-41d8-9fe3-a2817264b07f)
+
