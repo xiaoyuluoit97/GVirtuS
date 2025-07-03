@@ -96,6 +96,7 @@ cmake -D CMAKE_BUILD_TYPE=Release \
   -D BUILD_PERF_TESTS=OFF \
   -D BUILD_opencv_cudev=ON \
   -D BUILD_opencv_cudalegacy=OFF \
+  -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \
       -D BUILD_EXAMPLES=OFF ..
 
 make -j$(nproc)
