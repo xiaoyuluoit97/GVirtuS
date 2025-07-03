@@ -121,3 +121,18 @@ ldd sample
 
 ./sample
 ```
+
+```
+GVIRTUS_HOME=/home/GVirtuS
+export GVIRTUS_LOGLEVEL=10000
+export LD_LIBRARY_PATH=${GVIRTUS_HOME}/lib:${GVIRTUS_HOME}/lib/frontend:${LD_LIBRARY_PATH}
+
+nvcc -v -cudart=shared main.cu -o sample -L ${GVIRTUS_HOME}/lib/frontend -L ${GVIRTUS_HOME}/lib/ -lcuda -lcublas -lcudnn -lcudart `pkg-config --cflags --libs opencv4`
+ldd sample
+nm sample | grep cu
+./sample &
+pid=$!
+sleep 1
+lsof -p $pid | grep cu
+kill $pid
+```
