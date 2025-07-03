@@ -162,3 +162,9 @@ the result of use lsof (without and with gvirtus)
 ![image](https://github.com/user-attachments/assets/8b2a3cbb-78be-42c7-89e2-ac6f1aeda80a)
 ![image](https://github.com/user-attachments/assets/f239c497-68db-41d8-9fe3-a2817264b07f)
 
+the link of cudart in opencv is static, use nm sample | grep cu can see the link is static or dynamic. T is static and U is dynamic.
+
+when install opencv, add this line:
+
+-D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \
+
