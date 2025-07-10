@@ -168,3 +168,58 @@ when install opencv, add this line:
 
 -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \
 
+**Date:** 07-07-2025 - 11-07-2025
+
+try to fix cudaHostRegister and cudaHostUnregister. The excution is not stable, with exit code 2 	cudaErrorMemoryAllocation, 712 cudaErrorOperatingSystem and 713 cudaErrorContextIsDestroyed
+```
+extern "C" __host__ CUDARTAPI cudaError_t cudaHostRegister(void *ptr, size_t size,
+                                                        unsigned int flags) {
+    
+    CudaRtFrontend::Prepare();
+    CudaRtFrontend::AddHostPointerForArguments(ptr);
+    CudaRtFrontend::AddVariableForArguments(size);
+    CudaRtFrontend::AddVariableForArguments(flags);
+    CudaRtFrontend::Execute("cudaHostRegister");
+    if (CudaRtFrontend::Success()) {
+        mappedPointer host;
+        host.pointer = ptr;  
+        host.size = size;
+        CudaRtFrontend::addMappedPointer(ptr, host);
+    }
+    return CudaRtFrontend::GetExitCode();
+}
+
+extern "C" __host__ cudaError_t CUDARTAPI cudaHostUnregister(void* ptr) {
+    CudaRtFrontend::Prepare();
+    CudaRtFrontend::AddHostPointerForArguments(ptr);
+    CudaRtFrontend::Execute("cudaHostUnregister");
+    return CudaRtFrontend::GetExitCode();
+}
+
+CUDA_ROUTINE_HANDLER(HostRegister) {
+  try {
+    void *ptr = input_buffer->Assign<void>();
+    size_t size = input_buffer->Get<size_t>();
+    unsigned int flags = input_buffer->Get<unsigned int>();
+    
+    cudaHostUnregister(ptr);
+    cudaError_t exit_code = cudaHostRegister(ptr, size, flags);
+    std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
+    gvirtus::common::mappedPointer host;
+    host.pointer = ptr;
+    host.size = size;
+    
+    return std::make_shared<Result>(exit_code, out);
+  } catch (const std::exception& e) {
+    cerr << e.what() << endl;
+    return std::make_shared<Result>(cudaErrorMemoryAllocation);
+  }
+}
+
+CUDA_ROUTINE_HANDLER(HostUnregister) {
+  void *ptr = input_buffer->Assign<void>();
+  cudaError_t exit_code = cudaHostUnregister(ptr);
+
+  return std::make_shared<Result>(exit_code);
+}
+```
