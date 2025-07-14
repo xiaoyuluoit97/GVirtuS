@@ -171,44 +171,59 @@ when install opencv, add this line:
 **Date:** 07-07-2025 - 11-07-2025
 
 try to fix cudaHostRegister and cudaHostUnregister. The excution is not stable, with exit code 2 	cudaErrorMemoryAllocation, 712 cudaErrorOperatingSystem and 713 cudaErrorContextIsDestroyed
+
+
+**Date:** 14-07-2025 - 18-07-2025
+(looks solved) The frontend maintains a lookup table to track the mapping between host and device pointers, with memory allocation handled by the backend.
 ```
 extern "C" __host__ CUDARTAPI cudaError_t cudaHostRegister(void *ptr, size_t size,
                                                         unsigned int flags) {
     
     CudaRtFrontend::Prepare();
-    CudaRtFrontend::AddHostPointerForArguments(ptr);
+    CudaRtFrontend::AddVariableForArguments(reinterpret_cast<uintptr_t>(ptr));
     CudaRtFrontend::AddVariableForArguments(size);
     CudaRtFrontend::AddVariableForArguments(flags);
     CudaRtFrontend::Execute("cudaHostRegister");
+    // cout << "cudaHostRegister frontend ptr: " << ptr << ", size: " << size;
     if (CudaRtFrontend::Success()) {
+        void *devptr = CudaRtFrontend::GetOutputDevicePointer();
         mappedPointer host;
-        host.pointer = ptr;  
+        host.pointer = devptr;  
         host.size = size;
         CudaRtFrontend::addMappedPointer(ptr, host);
+        // cout << "cudaHostRegister frontend ptr: " << ptr ;
+        // cout << "cudaHostRegister frontend devptr: " << devptr<< ", size: " << size;
     }
     return CudaRtFrontend::GetExitCode();
 }
 
 extern "C" __host__ cudaError_t CUDARTAPI cudaHostUnregister(void* ptr) {
-    CudaRtFrontend::Prepare();
-    CudaRtFrontend::AddHostPointerForArguments(ptr);
-    CudaRtFrontend::Execute("cudaHostUnregister");
+    if (CudaRtFrontend::isMappedMemory(ptr)) {
+        mappedPointer remotePointer = CudaRtFrontend::getMappedPointer(ptr);
+        // void *devptr = nullptr;
+        // devptr=remotePointer.pointer;
+        CudaRtFrontend::Prepare();
+        CudaRtFrontend::AddDevicePointerForArguments(remotePointer.pointer);
+        CudaRtFrontend::Execute("cudaHostUnregister");
+        // free(ptr);
+      }
     return CudaRtFrontend::GetExitCode();
 }
 
 CUDA_ROUTINE_HANDLER(HostRegister) {
   try {
-    void *ptr = input_buffer->Assign<void>();
+    void *ptr = reinterpret_cast<void*>(input_buffer->Get<uintptr_t>());
     size_t size = input_buffer->Get<size_t>();
     unsigned int flags = input_buffer->Get<unsigned int>();
-    
-    cudaHostUnregister(ptr);
+    ptr = malloc(size);
+    // cout << "HostRegister: ptr=" << ptr << ", size=" << size
+    //      << ", flags=" << flags << endl;
     cudaError_t exit_code = cudaHostRegister(ptr, size, flags);
     std::shared_ptr<Buffer> out = std::make_shared<Buffer>();
     gvirtus::common::mappedPointer host;
     host.pointer = ptr;
     host.size = size;
-    
+    out->AddMarshal(ptr);
     return std::make_shared<Result>(exit_code, out);
   } catch (const std::exception& e) {
     cerr << e.what() << endl;
@@ -217,9 +232,9 @@ CUDA_ROUTINE_HANDLER(HostRegister) {
 }
 
 CUDA_ROUTINE_HANDLER(HostUnregister) {
-  void *ptr = input_buffer->Assign<void>();
-  cudaError_t exit_code = cudaHostUnregister(ptr);
-
+  void *devPtr = input_buffer->GetFromMarshal<void *>();
+  cout << "HostUnregister: ptr=" << devPtr << endl;
+  cudaError_t exit_code = cudaHostUnregister(devPtr);
   return std::make_shared<Result>(exit_code);
 }
 ```
