@@ -3,9 +3,9 @@
     {
       "endpoint": {
         "suite": "roce-rdma",
-        "protocol": "roce",
-        "server_address": "130.225.243.38",
-        "port": "9999"
+        "protocol": "ib",
+        "server_address": "24.24.24.1",
+        "port": "1123"
       },
       "plugins": [
         "cudart",

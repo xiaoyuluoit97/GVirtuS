@@ -86,7 +86,7 @@ void RdmaCommunicator::Serve() {
     ktm_rdma_listen(rdmaCmListenId, BACKLOG);
 }
 
-/*
+
 const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() const {
 #ifdef DEBUG
     std::cout << "Called Accept()" << std::endl;
@@ -103,8 +103,9 @@ const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() con
 
     return new RdmaCommunicator(clientRdmaCmId);
 }
-*/
 
+
+/*
 const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() const {
     static std::queue<rdma_cm_id *> connectionPool;
 #ifdef DEBUG
@@ -131,7 +132,7 @@ const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() con
     // creat a new RdmaCommunicator to wrap this connect, dont share communicator
     return new RdmaCommunicator(clientRdmaCmId);
 }
-
+*/
 void RdmaCommunicator::Connect() {
 #ifdef DEBUG
     std::cout << "Called Connect()" << std::endl;

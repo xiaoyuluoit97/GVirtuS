@@ -1,7 +1,6 @@
-﻿
-#include "cuda_runtime.h"
+﻿#include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -136,6 +135,7 @@ __global__ void kernel_fc1_sigmoid(float pre_output[10], float output[10]) {
         output[idx] = sigmoid(pre_output[idx]);
     }
 }
+
 
 class Layer {
 public:
@@ -449,76 +449,68 @@ void convertDoubleArrayToFloatArray(const double input[28][28], float output[28]
 	}
 }
 
+
+
 int main()
 {
+    // Loading MNIST dataset
+    unsigned int count = 100;
+    const char* images_path = "data/t10k-images.idx3-ubyte";
+    const char* labels_path = "data/t10k-labels.idx1-ubyte";
+    unsigned int count2 = 100; 
 
-	//Loading MNIST dataset
-	unsigned int count = 10000;
-	const char* images_path = "data/t10k-images.idx3-ubyte";
-	const char* labels_path = "data/t10k-labels.idx1-ubyte";
-	//unsigned int count = 10000;
-	
-	//unsigned int count2 = 10000;
-    unsigned int count2 = 100;
-	struct mnist_data** data_set = (struct mnist_data**)malloc(count * sizeof(struct mnist_data*));
+    struct mnist_data** data_set = (struct mnist_data**)malloc(count * sizeof(struct mnist_data*));
+    for (unsigned int i = 0; i < count; i++) {
+        data_set[i] = (struct mnist_data*)malloc(sizeof(struct mnist_data));
+        if (data_set[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed.\n");
+            return 1;
+        }
+    }
 
-	for (unsigned int i = 0; i < count; i++) {
-		data_set[i] = (struct mnist_data*)malloc(sizeof(struct mnist_data));
-		if (data_set[i] == NULL) {
-			fprintf(stderr, "Memory allocation failed.\n Output = ");
-			return 1;
-		}
-	}
+    int r = mnist_load(images_path, labels_path, data_set, &count);
 
-	int r = mnist_load(images_path, labels_path, data_set, &count);
+    // Creating layer
+    Layer layer(6, 5, 5);
 
-	//Creating layer
-	Layer layer(6, 5, 5);
+    float res[10];
+    unsigned int error = 0;
+    float total_time_ms = 0.0;
 
-	float res[10];
-	unsigned int error = 0;
-	unsigned int max = 0;
-	float time_taken = 0.0;
+    for (unsigned int i = 0; i < count2; i++) {
+        float data[28][28];
+        convertDoubleArrayToFloatArray(data_set[i]->data, data);
 
-	cudaEvent_t start, stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-    
-	for (unsigned int i = 0; i < count2; i++) {
-		float data[28][28];
-		//since the input to our class has to be float
-		convertDoubleArrayToFloatArray(data_set[i]->data, data);
+        // std::chrono 
+        auto start = std::chrono::high_resolution_clock::now();
 
-		cudaEventRecord(start, NULL);
+        layer.forward_pass(data);
 
-		layer.forward_pass(data);
 
-		cudaEventRecord(stop, NULL);
-		cudaEventSynchronize(stop);
-		float milliseconds = 0.00f;
-		cudaEventElapsedTime(&milliseconds, start, stop);
-		time_taken += milliseconds;
+        cudaMemcpy(res, layer.d_output_fc, 10 * sizeof(float), cudaMemcpyDeviceToHost);
 
-		cudaMemcpy(res, layer.d_output_fc, 10 * sizeof(float), cudaMemcpyDeviceToHost);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float, std::milli> elapsed = end - start;
+        total_time_ms += elapsed.count();  
 
-		for (int j = 0; j < 10; j++) {
-			if (res[max] < res[j])
-				max = j;
-		}
-		printf("%d,",max);
-		if (max != data_set[i]->label) {
-			error++;
-		}
-	}
+   
+        int max = 0;
+        for (int j = 1; j < 10; j++) {
+            if (res[max] < res[j])
+                max = j;
+        }
 
-	unsigned int test_cnt = count2;
-	printf("\n Error Rate = %f%% (%d out of 500)\n", double(error) / double(test_cnt) * 100.0, error);
-	printf("Accuracy = %.3f%% (%d out of 500)\n",
-		100.0 - double(error) / double(test_cnt) * 100.0, test_cnt - error);
-	printf("Ex time = %f (ms) \n", time_taken);
+        printf("%d,", max);
+
+        if (max != data_set[i]->label) {
+            error++;
+        }
+    }
+
+    unsigned int test_cnt = count2;
+    printf("\nError Rate = %.2f%% (%d out of %d)\n", double(error) / test_cnt * 100.0, error, test_cnt);
+    printf("Accuracy = %.2f%% (%d out of %d)\n", 100.0 - double(error) / test_cnt * 100.0, test_cnt - error, test_cnt);
+    printf("Total execution time = %.3f ms (%.3f ms/image)\n", total_time_ms, total_time_ms / test_cnt);
 
     return 0;
 }
-
-
-
