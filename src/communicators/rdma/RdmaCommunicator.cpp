@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <arpa/inet.h>
-
+#include <queue>
 #include "RdmaCommunicator.h"
 
 #include <gvirtus/communicators/Endpoint.h>
@@ -104,8 +104,9 @@ const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() con
     return new RdmaCommunicator(clientRdmaCmId);
 }
 */
-static std::queue<rdma_cm_id *> connectionPool;
+
 const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() const {
+    static std::queue<rdma_cm_id *> connectionPool;
 #ifdef DEBUG
     std::cout << "Called Accept()" << std::endl;
 #endif
