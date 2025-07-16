@@ -175,6 +175,8 @@ try to fix cudaHostRegister and cudaHostUnregister. The excution is not stable, 
 
 **Date:** 14-07-2025 - 18-07-2025
 (looks solved) The frontend maintains a lookup table to track the mapping between host and device pointers, with memory allocation handled by the backend.
+
+(unsolved) cuda driver lib cannot be called after add -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \. Have no idea about such conflicts.
 ```
 extern "C" __host__ CUDARTAPI cudaError_t cudaHostRegister(void *ptr, size_t size,
                                                         unsigned int flags) {
