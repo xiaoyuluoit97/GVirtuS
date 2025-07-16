@@ -3,7 +3,7 @@
     {
       "endpoint": {
         "suite": "roce-rdma",
-        "protocol": "ib",
+        "protocol": "roce",
         "server_address": "130.225.243.38",
         "port": "9999"
       },
