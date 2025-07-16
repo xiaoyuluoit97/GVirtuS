@@ -104,41 +104,32 @@ const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() con
     return new RdmaCommunicator(clientRdmaCmId);
 }
 */
+static std::queue<rdma_cm_id *> connectionPool;
 const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() const {
 #ifdef DEBUG
     std::cout << "Called Accept()" << std::endl;
 #endif
+    rdma_cm_id *clientRdmaCmId = nullptr;
 
-    // static cache the comunicator's pointer
-    static std::shared_ptr<RdmaCommunicator> cachedCommunicator = nullptr;
-
-    if (cachedCommunicator != nullptr) {
-#ifdef DEBUG
+    if (!connectionPool.empty()) {
+        clientRdmaCmId = connectionPool.front();
+        connectionPool.pop();
         std::cout << "Returning cached RDMA communicator." << std::endl;
-#endif
-        return cachedCommunicator.get(); // only return pointer
+    } else {
+        ktm_rdma_get_request(rdmaCmListenId, &clientRdmaCmId);
+        ktm_rdma_accept(clientRdmaCmId, nullptr);
+
+        // init qps attr
+        auto *ibvQpAttr = static_cast<ibv_qp_attr *>(malloc(sizeof(ibv_qp_attr)));
+        ibvQpAttr->min_rnr_timer = 1;
+        if (ibv_modify_qp(clientRdmaCmId->qp, ibvQpAttr, IBV_QP_MIN_RNR_TIMER)) {
+            fprintf(stderr, "ibv_modify_attr() failed: %s\n", strerror(errno));
+        }
     }
 
-    rdma_cm_id *clientRdmaCmId;
-    ktm_rdma_get_request(rdmaCmListenId, &clientRdmaCmId);
-    ktm_rdma_accept(clientRdmaCmId, nullptr);
-
-    auto *ibvQpAttr = static_cast<ibv_qp_attr *>(malloc(sizeof(ibv_qp_attr)));
-    ibvQpAttr->min_rnr_timer = 1;
-    if (ibv_modify_qp(clientRdmaCmId->qp, ibvQpAttr, IBV_QP_MIN_RNR_TIMER)) {
-        fprintf(stderr, "ibv_modify_attr() failed: %s\n", strerror(errno));
-    }
-
-    // create cached communicator
-    cachedCommunicator = std::make_shared<RdmaCommunicator>(clientRdmaCmId);
-
-#ifdef DEBUG
-    std::cout << "New RDMA communicator accepted and cached." << std::endl;
-#endif
-
-    return cachedCommunicator.get();
+    // creat a new RdmaCommunicator to wrap this connect, dont share communicator
+    return new RdmaCommunicator(clientRdmaCmId);
 }
-
 
 void RdmaCommunicator::Connect() {
 #ifdef DEBUG
