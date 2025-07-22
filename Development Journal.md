@@ -243,5 +243,20 @@ CUDA_ROUTINE_HANDLER(HostUnregister) {
 
 **Date:** 21-07-2025 - 25-07-2025
 (solved) cuda driver lib cannot be called after add -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \. Have no idea about such conflicts. DO NOT use cudart=shared after add -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \
+add function cuCtxSetCurrent
+```
+extern CUresult cuCtxSetCurrent(CUcontext ctx) {
+    CudaDrFrontend::Prepare();
+    CudaDrFrontend::AddDevicePointerForArguments((void*) ctx);
+    CudaDrFrontend::Execute("cuCtxSetCurrent");
+    return CudaDrFrontend::GetExitCode();
+}
+CUDA_DRIVER_HANDLER(CtxSetCurrent) {
+    CUcontext ctx = input_buffer->Get<CUcontext> ();
+    CUresult exit_code = cuCtxSetCurrent(ctx);
+    return std::make_shared<Result>((cudaError_t) exit_code);
+}
+```
+
 memo
 change the mirror in mirrorcmake_install.cmake 
