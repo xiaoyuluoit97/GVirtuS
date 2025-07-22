@@ -454,10 +454,10 @@ void convertDoubleArrayToFloatArray(const double input[28][28], float output[28]
 int main()
 {
     // Loading MNIST dataset
-    unsigned int count = 100;
+    unsigned int count = 1000;
     const char* images_path = "data/t10k-images.idx3-ubyte";
     const char* labels_path = "data/t10k-labels.idx1-ubyte";
-    unsigned int count2 = 100; 
+    unsigned int count2 = 1000; 
 
     struct mnist_data** data_set = (struct mnist_data**)malloc(count * sizeof(struct mnist_data*));
     for (unsigned int i = 0; i < count; i++) {

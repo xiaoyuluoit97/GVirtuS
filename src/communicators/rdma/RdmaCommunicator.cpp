@@ -11,6 +11,13 @@
 #include <gvirtus/communicators/Endpoint.h>
 #include <gvirtus/communicators/Endpoint_Tcp.h>
 #include <gvirtus/communicators/Endpoint_Rdma.h>
+#include <chrono>
+
+static size_t totalReadCount = 0;
+static size_t totalReadBytes = 0;
+static size_t totalWriteCount = 0;
+static size_t totalWriteBytes = 0;
+
 
 using gvirtus::communicators::RdmaCommunicator;
 
@@ -88,6 +95,7 @@ void RdmaCommunicator::Serve() {
 
 
 const gvirtus::communicators::Communicator *const RdmaCommunicator::Accept() const {
+    std::cout << "[RDMA] Accept() called — creating NEW connection." << std::endl;
 #ifdef DEBUG
     std::cout << "Called Accept()" << std::endl;
 #endif
@@ -191,6 +199,13 @@ size_t RdmaCommunicator::Read(char *buffer, size_t size) {
     if (size < 1024 * 5) {
         memcpy(buffer, preregisteredBuffer, size);
     }
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    totalReadCount++;
+    totalReadBytes += size;
+
+    std::cout << "[RDMA-DEBUG] Read #" << totalReadCount << ", Bytes: " << size
+              << ", TotalBytes: " << totalReadBytes
+              << ", poll_cq time: " << duration << "us" << std::endl;
 
     return size;
 }
@@ -220,7 +235,16 @@ size_t RdmaCommunicator::Write(const char *buffer, size_t size) {
     if (size > 1024 * 5) {
         free(actualBuffer);
     }
+    
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    totalWriteCount++;
+    totalWriteBytes += size;
 
+    std::cout << "[RDMA-DEBUG] Write #" << totalWriteCount << ", Bytes: " << size
+              << ", TotalBytes: " << totalWriteBytes
+              << ", poll_cq time: " << duration << "us" << std::endl;
+
+    return size;
     return size;
 }
 
