@@ -240,3 +240,7 @@ CUDA_ROUTINE_HANDLER(HostUnregister) {
   return std::make_shared<Result>(exit_code);
 }
 ```
+
+**Date:** 21-07-2025 - 25-07-2025
+memo
+change the mirror in mirrorcmake_install.cmake 
