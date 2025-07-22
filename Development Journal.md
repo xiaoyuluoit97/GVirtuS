@@ -242,5 +242,6 @@ CUDA_ROUTINE_HANDLER(HostUnregister) {
 ```
 
 **Date:** 21-07-2025 - 25-07-2025
+(solved) cuda driver lib cannot be called after add -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \. Have no idea about such conflicts. DO NOT use cudart=shared after add -D CUDA_USE_STATIC_CUDA_RUNTIME=OFF \
 memo
 change the mirror in mirrorcmake_install.cmake 
