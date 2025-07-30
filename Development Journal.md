@@ -260,3 +260,7 @@ CUDA_DRIVER_HANDLER(CtxSetCurrent) {
 
 memo
 change the mirror in mirrorcmake_install.cmake 
+
+**Date:** 28-07-2025 - 01-08-2025
+
+GVirtuS has already supported c++ opencv dnn module for parts of dnn tasks, like yolo (object detection) and mobilenet (object classification).
