@@ -40,6 +40,8 @@ namespace gvirtus::communicators {
                                                         "oldtcp",
                                                         "ws",
                                                         "ib",
+                                                        "hybrid",
+                                                        
                                                        
             };
 
