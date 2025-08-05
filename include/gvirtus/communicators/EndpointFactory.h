@@ -7,6 +7,8 @@
 #include "Endpoint.h"
 #include "Endpoint_Rdma.h"
 #include "Endpoint_Tcp.h"
+#include "Endpoint_Hybrid.h"
+
 //#define DEBUG
 
 namespace gvirtus::communicators {
@@ -45,6 +47,13 @@ class EndpointFactory {
 #endif
     auto end = common::JSON<Endpoint_Rdma>(json_path).parser();
     ptr = std::make_shared<Endpoint_Rdma>(end);
+}
+    else if ("hybrid" == j["communicator"][ind_endpoint]["endpoint"].at("suite")) {
+#ifdef DEBUG
+    std::cout << "EndpointFactory::get_endpoint() found hybrid endpoint" << std::endl;
+#endif
+    auto end = common::JSON<Endpoint_Hybrid>(json_path).parser();
+    ptr = std::make_shared<Endpoint_Hybrid>(end);
 }
     else {
         throw std::runtime_error("EndpointFactory::get_endpoint(): Your suite is not compatible!");
