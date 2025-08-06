@@ -16,15 +16,18 @@
 #include <WinSock2.h>
 static bool initialized = false;
 #endif
+#include "../tcp/TcpCommunicator.h"
+#include "../rdma/RdmaCommunicator.h"
+
 #include "gvirtus/communicators/Communicator.h"
-#include "gvirtus/communicators/TcpCommunicator.h"
-#include "gvirtus/communicators/RdmaCommunicator.h"
+
+
 #include "gvirtus/communicators/Endpoint.h"
 #include "gvirtus/communicators/Endpoint_Tcp.h"
 #include "gvirtus/communicators/Endpoint_Rdma.h"
 #include "gvirtus/communicators/Endpoint_Hybrid.h"  // new endpoint for hybrid communicator
 
-#include "gvirtus/communicators/HybridCommunicator.h"
+#include "HybridCommunicator.h"
 
 using gvirtus::communicators::HybridCommunicator;
 using gvirtus::communicators::TcpCommunicator;
@@ -95,7 +98,7 @@ void HybridCommunicator::Serve() {
 #endif
 }
 
-const Communicator *const HybridCommunicator::Accept() const {
+const gvirtus::communicators::Communicator *const HybridCommunicator::Accept() const {
 #ifdef DEBUG
     std::cout << "HybridCommunicator::Accept() called" << std::endl;
 #endif
@@ -196,9 +199,9 @@ void HybridCommunicator::Sync() {
     if (_rdma) _rdma->Sync();
 }
 
-extern "C" std::shared_ptr<gvirtus::communicators::HybridCommunicator> create_communicator(
+extern "C" std::shared_ptr<gvirtus::communicators::Communicator> create_communicator(
     std::shared_ptr<gvirtus::communicators::Endpoint> end) {
-    
+
     using namespace gvirtus::communicators;
 
     auto hybrid = std::dynamic_pointer_cast<Endpoint_Hybrid>(end);
@@ -219,5 +222,5 @@ extern "C" std::shared_ptr<gvirtus::communicators::HybridCommunicator> create_co
     std::shared_ptr<RdmaCommunicator> rdma =
         std::make_shared<RdmaCommunicator>(host, rdmaPortStr, isRoce);
 
-    return std::make_shared<HybridCommunicator>(tcp, rdma, /* threshold = */ 1024 * 5);
+    return std::make_shared<HybridCommunicator>(tcp, rdma, 1024 * 5);
 }

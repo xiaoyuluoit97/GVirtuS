@@ -30,10 +30,21 @@ class HybridCommunicator : public Communicator {
 
   HybridCommunicator(std::shared_ptr<Communicator> tcp,
                      std::shared_ptr<Communicator> rdma,
-                     size_t threshold = 784,000)
-      : _tcp(std::move(tcp)), _rdma(std::move(rdma)), _threshold(threshold) {}
+                     size_t threshold = 784000);
 
-  ~HybridCommunicator() override = default;
+  // before connection
+  HybridCommunicator(const std::string &hostname,
+                     const std::string &tcpPort,
+                     const std::string &rdmaPort,
+                     bool isRoce,
+                     size_t threshold);
+
+  // after connection
+  HybridCommunicator(std::shared_ptr<TcpCommunicator> tcp,
+                     std::shared_ptr<RdmaCommunicator> rdma,
+                     size_t threshold);
+
+  ~HybridCommunicator();
 
   void Serve() override;
   const Communicator *const Accept() const override;

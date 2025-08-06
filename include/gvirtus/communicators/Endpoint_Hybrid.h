@@ -38,6 +38,9 @@ public:
     Endpoint_Hybrid &tcp_port(const std::string &port);
 
     // Getters
+    // Getters
+    inline const std::string &suite() const { return _suite; }     // Added: allow reading suite value
+    inline const std::string &protocol() const { return _protocol; }
     inline const std::string &rdma_suite() const { return _rdma_suite; }
     inline const std::string &tcp_suite() const { return _tcp_suite; }
     inline const std::string &address() const { return _address; }
