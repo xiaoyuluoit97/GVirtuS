@@ -264,3 +264,13 @@ change the mirror in mirrorcmake_install.cmake
 **Date:** 28-07-2025 - 01-08-2025
 
 GVirtuS has already supported c++ opencv dnn module for parts of dnn tasks, like yolo (object detection) and mobilenet (object classification).
+
+**Date:** 04-08-2025 - 08-08-2025
+
+how to call cuda driver library when frontend is GPU-less:
+- install corresponding nvidia-driver
+```
+apt update
+apt install -y nvidia-driver-570
+```
+- then reinstall GVirtuS, check if **ls ${GVIRTUS_HOME}/lib/frontend/libcuda.so** exists.
